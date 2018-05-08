@@ -1,255 +1,318 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
+<html>
+<head>
+	<title>Graph!</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<style>
+		body {overflow: hidden}
 
-<svg width="960" height="600"></svg>
+		.card.minimal {padding: 0}
+		.card.minimal > * {background: none; padding: 0; margin: 0}
+		.card.minimal > * > .input-field, .card.minimal > * > .range-field {margin: 0}
+		.card.minimal > * > .input-field > input, .card.minimal > * > .input-field > .select-wrapper > input {margin-bottom: 0; border-bottom: 0}
+		.card.minimal > * > .input-field > label {position: absolute; top: -3em}
+		.card.minimal > * > .range-field > label, .card.minimal > * > .switch > label {position: absolute; top: -2em}
+	</style>
+</head>
+<body>
+	<div class="container row" style="position: absolute; top: 2em; left: 0; right: 0">
+		<div class="card minimal col s5">
+			<div class="card-action row">
+				<div class="input-field col s10">
+					<input placeholder="Address/Transaction Hash" id="hash" type="text" class="validate">
+				</div>
+				<a class="waves-effect waves-light btn col s2"><i class="material-icons">arrow_forward</i></a>
+			</div>
+		</div>
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script>
-var baseNodes = [
-  { id: "mammal", group: 0, label: "Mammals", level: 1 },
-  { id: "dog"   , group: 0, label: "Dogs"   , level: 2 },
-  { id: "cat"   , group: 0, label: "Cats"   , level: 2 },
-  { id: "fox"   , group: 0, label: "Foxes"  , level: 2 },
-  { id: "elk"   , group: 0, label: "Elk"    , level: 2 },
-  { id: "insect", group: 1, label: "Insects", level: 1 },
-  { id: "ant"   , group: 1, label: "Ants"   , level: 2 },
-  { id: "bee"   , group: 1, label: "Bees"   , level: 2 },
-  { id: "fish"  , group: 2, label: "Fish"   , level: 1 },
-  { id: "carp"  , group: 2, label: "Carp"   , level: 2 },
-  { id: "pike"  , group: 2, label: "Pikes"  , level: 2 }
-]
+		<div class="col s2"></div>
 
-var baseLinks = [
-	{ target: "mammal", source: "dog" , strength: 0.7 },
-	{ target: "mammal", source: "cat" , strength: 0.7 },
-  { target: "mammal", source: "fox" , strength: 0.7 },
-  { target: "mammal", source: "elk" , strength: 0.7 },
-  { target: "insect", source: "ant" , strength: 0.7 },
-  { target: "insect", source: "bee" , strength: 0.7 },
-  { target: "fish"  , source: "carp", strength: 0.7 },
-  { target: "fish"  , source: "pike", strength: 0.7 },
-  { target: "cat"   , source: "elk" , strength: 0.1 },
-  { target: "carp"  , source: "ant" , strength: 0.1 },
-  { target: "elk"   , source: "bee" , strength: 0.1 },
-  { target: "dog"   , source: "cat" , strength: 0.1 },
-  { target: "fox"   , source: "ant" , strength: 0.1 },
-	{ target: "pike"  , source: "cat" , strength: 0.1 }
-]
+		<div class="card minimal col s5">
+			<div class="card-action row">
+				<div class="input-field col s3">
+					<select>
+						<option value="1" selected>Down</option>
+						<option value="2">Up</option>
+						<option value="3">Up &amp; Down</option>
+					</select>
+					<label>Direction</label>
+				</div>
 
-var nodes = [...baseNodes]
-var links = [...baseLinks]
+				<div class="input-field col s3">
+					<select>
+						<option value="1">Poison</option>
+						<option value="2">Haircut</option>
+						<option value="3">FIFO</option>
+						<option value="3">FILO</option>
+					</select>
+					<label>Tracing</label>
+				</div>
 
-function getNeighbors(node) {
-  return baseLinks.reduce(function (neighbors, link) {
-      if (link.target.id === node.id) {
-        neighbors.push(link.source.id)
-      } else if (link.source.id === node.id) {
-        neighbors.push(link.target.id)
-      }
-      return neighbors
-    },
-    [node.id]
-  )
-}
+				<p class="range-field col s3">
+					<label>Depth Limit</label>
+					<input type="range" id="test5" min="0" max="100" />
+				</p>
 
-function isNeighborLink(node, link) {
-  return link.target.id === node.id || link.source.id === node.id
-}
+				<div class="switch col s3">
+					<label>
+						Live Updates<br/><br/>
+						<input type="checkbox">
+						<span class="lever"></span>
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	<svg width="960" height="600"></svg>
+</body>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {M.FormSelect.init(document.querySelectorAll('select'))})
+	</script>
+	<script>
+		var baseNodes = [
+			{ id: "mammal", group: 0, label: "Mammals", level: 1 },
+			{ id: "dog"   , group: 0, label: "Dogs"   , level: 2 },
+			{ id: "cat"   , group: 0, label: "Cats"   , level: 2 },
+			{ id: "fox"   , group: 0, label: "Foxes"  , level: 2 },
+			{ id: "elk"   , group: 0, label: "Elk"    , level: 2 },
+			{ id: "insect", group: 1, label: "Insects", level: 1 },
+			{ id: "ant"   , group: 1, label: "Ants"   , level: 2 },
+			{ id: "bee"   , group: 1, label: "Bees"   , level: 2 },
+			{ id: "fish"  , group: 2, label: "Fish"   , level: 1 },
+			{ id: "carp"  , group: 2, label: "Carp"   , level: 2 },
+			{ id: "pike"  , group: 2, label: "Pikes"  , level: 2 }
+		]
 
+		var baseLinks = [
+			{ target: "mammal", source: "dog" , strength: 0.7 },
+			{ target: "mammal", source: "cat" , strength: 0.7 },
+			{ target: "mammal", source: "fox" , strength: 0.7 },
+			{ target: "mammal", source: "elk" , strength: 0.7 },
+			{ target: "insect", source: "ant" , strength: 0.7 },
+			{ target: "insect", source: "bee" , strength: 0.7 },
+			{ target: "fish"  , source: "carp", strength: 0.7 },
+			{ target: "fish"  , source: "pike", strength: 0.7 },
+			{ target: "cat"   , source: "elk" , strength: 0.1 },
+			{ target: "carp"  , source: "ant" , strength: 0.1 },
+			{ target: "elk"   , source: "bee" , strength: 0.1 },
+			{ target: "dog"   , source: "cat" , strength: 0.1 },
+			{ target: "fox"   , source: "ant" , strength: 0.1 },
+			{ target: "pike"  , source: "cat" , strength: 0.1 }
+		]
 
-function getNodeColor(node, neighbors) {
-  if (Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1) {
-    return node.level === 1 ? 'blue' : 'green'
-  }
+		var nodes = [...baseNodes]
+		var links = [...baseLinks]
 
-  return node.level === 1 ? 'red' : 'gray'
-}
+		function getNeighbors(node) {
+			return baseLinks.reduce(function (neighbors, link) {
+					if (link.target.id === node.id) {
+						neighbors.push(link.source.id)
+					} else if (link.source.id === node.id) {
+						neighbors.push(link.target.id)
+					}
+					return neighbors
+				},
+				[node.id]
+			)
+		}
 
+		function isNeighborLink(node, link) {
+			return link.target.id === node.id || link.source.id === node.id
+		}
 
-function getLinkColor(node, link) {
-  return isNeighborLink(node, link) ? 'green' : '#E5E5E5'
-}
+		function getNodeColor(node, neighbors) {
+			if (Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1) {
+				return node.level === 1 ? 'blue' : 'green'
+			}
 
-function getTextColor(node, neighbors) {
-  return Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1 ? 'green' : 'black'
-}
+			return node.level === 1 ? 'red' : 'gray'
+		}
 
-var width = window.innerWidth
-var height = window.innerHeight
+		function getLinkColor(node, link) {
+			return isNeighborLink(node, link) ? 'green' : '#E5E5E5'
+		}
 
-var svg = d3.select('svg')
-svg.attr('width', width).attr('height', height)
+		function getTextColor(node, neighbors) {
+			return Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1 ? 'green' : 'black'
+		}
 
-var linkElements,
-  nodeElements,
-  textElements
+		var width = window.innerWidth
+		var height = window.innerHeight
 
-// we use svg groups to logically group the elements together
-var linkGroup = svg.append('g').attr('class', 'links')
-var nodeGroup = svg.append('g').attr('class', 'nodes')
-var textGroup = svg.append('g').attr('class', 'texts')
+		var svg = d3.select('svg')
+		svg.attr('width', width).attr('height', height)
 
-// we use this reference to select/deselect
-// after clicking the same element twice
-var selectedId
+		var linkElements, odeElements, textElements
 
-// simulation setup with all forces
-var linkForce = d3
-  .forceLink()
-  .id(function (link) { return link.id })
-  .strength(function (link) { return link.strength })
+		// we use svg groups to logically group the elements together
+		var linkGroup = svg.append('g').attr('class', 'links')
+		var nodeGroup = svg.append('g').attr('class', 'nodes')
+		var textGroup = svg.append('g').attr('class', 'texts')
 
-var simulation = d3
-  .forceSimulation()
-  .force('link', linkForce)
-  .force('charge', d3.forceManyBody().strength(-120))
-  .force('center', d3.forceCenter(width / 2, height / 2))
+		// we use this reference to select/deselect
+		// after clicking the same element twice
+		var selectedId
 
-var dragDrop = d3.drag().on('start', function (node) {
-  node.fx = node.x
-  node.fy = node.y
-}).on('drag', function (node) {
-  simulation.alphaTarget(0.7).restart()
-  node.fx = d3.event.x
-  node.fy = d3.event.y
-}).on('end', function (node) {
-  if (!d3.event.active) {
-    simulation.alphaTarget(0)
-  }
-  node.fx = null
-  node.fy = null
-})
+		// simulation setup with all forces
+		var linkForce = d3
+			.forceLink()
+			.id(function (link) { return link.id })
+			.strength(function (link) { return link.strength })
 
-// select node is called on every click
-// we either update the data according to the selection
-// or reset the data if the same node is clicked twice
-function selectNode(selectedNode) {
-  if (selectedId === selectedNode.id) {
-    selectedId = undefined
-    resetData()
-    updateSimulation()
-  } else {
-    selectedId = selectedNode.id
-    updateData(selectedNode)
-    updateSimulation()
-  }
+		var simulation = d3
+			.forceSimulation()
+			.force('link', linkForce)
+			.force('charge', d3.forceManyBody().strength(-120))
+			.force('center', d3.forceCenter(width / 2, height / 2))
 
-  var neighbors = getNeighbors(selectedNode)
+		var dragDrop = d3.drag().on('start', function (node) {
+			node.fx = node.x
+			node.fy = node.y
+		}).on('drag', function (node) {
+			simulation.alphaTarget(0.7).restart()
+			node.fx = d3.event.x
+			node.fy = d3.event.y
+		}).on('end', function (node) {
+			if (!d3.event.active) {
+				simulation.alphaTarget(0)
+			}
+			node.fx = null
+			node.fy = null
+		})
 
-  // we modify the styles to highlight selected nodes
-  nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors) })
-  textElements.attr('fill', function (node) { return getTextColor(node, neighbors) })
-  linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
-}
+		// select node is called on every click
+		// we either update the data according to the selection
+		// or reset the data if the same node is clicked twice
+		function selectNode(selectedNode) {
+			if (selectedId === selectedNode.id) {
+				selectedId = undefined
+				resetData()
+				updateSimulation()
+			} else {
+				selectedId = selectedNode.id
+				updateData(selectedNode)
+				updateSimulation()
+			}
 
-// this helper simple adds all nodes and links
-// that are missing, to recreate the initial state
-function resetData() {
-  var nodeIds = nodes.map(function (node) { return node.id })
+			var neighbors = getNeighbors(selectedNode)
 
-  baseNodes.forEach(function (node) {
-    if (nodeIds.indexOf(node.id) === -1) {
-      nodes.push(node)
-    }
-  })
+			// we modify the styles to highlight selected nodes
+			nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors) })
+			textElements.attr('fill', function (node) { return getTextColor(node, neighbors) })
+			linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
+		}
 
-  links = baseLinks
-}
+		// this helper simple adds all nodes and links
+		// that are missing, to recreate the initial state
+		function resetData() {
+			var nodeIds = nodes.map(function (node) { return node.id })
 
-// diffing and mutating the data
-function updateData(selectedNode) {
-  var neighbors = getNeighbors(selectedNode)
-  var newNodes = baseNodes.filter(function (node) {
-    return neighbors.indexOf(node.id) > -1 || node.level === 1
-  })
+			baseNodes.forEach(function (node) {
+				if (nodeIds.indexOf(node.id) === -1) {
+					nodes.push(node)
+				}
+			})
 
-  var diff = {
-    removed: nodes.filter(function (node) { return newNodes.indexOf(node) === -1 }),
-    added: newNodes.filter(function (node) { return nodes.indexOf(node) === -1 })
-  }
+			links = baseLinks
+		}
 
-  diff.removed.forEach(function (node) { nodes.splice(nodes.indexOf(node), 1) })
-  diff.added.forEach(function (node) { nodes.push(node) })
+		// diffing and mutating the data
+		function updateData(selectedNode) {
+			var neighbors = getNeighbors(selectedNode)
+			var newNodes = baseNodes.filter(function (node) {
+				return neighbors.indexOf(node.id) > -1 || node.level === 1
+			})
 
-  links = baseLinks.filter(function (link) {
-    return link.target.id === selectedNode.id || link.source.id === selectedNode.id
-  })
-}
+			var diff = {
+				removed: nodes.filter(function (node) { return newNodes.indexOf(node) === -1 }),
+				added: newNodes.filter(function (node) { return nodes.indexOf(node) === -1 })
+			}
 
-function updateGraph() {
-  // links
-  linkElements = linkGroup.selectAll('line')
-    .data(links, function (link) {
-      return link.target.id + link.source.id
-    })
+			diff.removed.forEach(function (node) { nodes.splice(nodes.indexOf(node), 1) })
+			diff.added.forEach(function (node) { nodes.push(node) })
 
-  linkElements.exit().remove()
+			links = baseLinks.filter(function (link) {
+				return link.target.id === selectedNode.id || link.source.id === selectedNode.id
+			})
+		}
 
-  var linkEnter = linkElements
-    .enter().append('line')
-    .attr('stroke-width', 1)
-    .attr('stroke', 'rgba(50, 50, 50, 0.2)')
+		function updateGraph() {
+			// links
+			linkElements = linkGroup.selectAll('line')
+				.data(links, function (link) {
+					return link.target.id + link.source.id
+				})
 
-  linkElements = linkEnter.merge(linkElements)
+			linkElements.exit().remove()
 
-  // nodes
-  nodeElements = nodeGroup.selectAll('circle')
-    .data(nodes, function (node) { return node.id })
+			var linkEnter = linkElements
+				.enter().append('line')
+				.attr('stroke-width', 1)
+				.attr('stroke', 'rgba(50, 50, 50, 0.2)')
 
-  nodeElements.exit().remove()
+			linkElements = linkEnter.merge(linkElements)
 
-  var nodeEnter = nodeElements
-    .enter()
-    .append('circle')
-    .attr('r', 10)
-    .attr('fill', function (node) { return node.level === 1 ? 'red' : 'gray' })
-    .call(dragDrop)
-    // we link the selectNode method here
-    // to update the graph on every click
-    .on('click', selectNode)
+			// nodes
+			nodeElements = nodeGroup.selectAll('circle')
+				.data(nodes, function (node) { return node.id })
 
-  nodeElements = nodeEnter.merge(nodeElements)
+			nodeElements.exit().remove()
 
-  // texts
-  textElements = textGroup.selectAll('text')
-    .data(nodes, function (node) { return node.id })
+			var nodeEnter = nodeElements
+				.enter()
+				.append('circle')
+				.attr('r', 10)
+				.attr('fill', function (node) { return node.level === 1 ? 'red' : 'gray' })
+				.call(dragDrop)
+				// we link the selectNode method here
+				// to update the graph on every click
+				.on('click', selectNode)
 
-  textElements.exit().remove()
+			nodeElements = nodeEnter.merge(nodeElements)
 
-  var textEnter = textElements
-    .enter()
-    .append('text')
-    .text(function (node) { return node.label })
-    .attr('font-size', 15)
-    .attr('dx', 15)
-    .attr('dy', 4)
+			// texts
+			textElements = textGroup.selectAll('text')
+				.data(nodes, function (node) { return node.id })
 
-  textElements = textEnter.merge(textElements)
-}
+			textElements.exit().remove()
 
-function updateSimulation() {
-  updateGraph()
+			var textEnter = textElements
+				.enter()
+				.append('text')
+				.text(function (node) { return node.label })
+				.attr('font-size', 15)
+				.attr('dx', 15)
+				.attr('dy', 4)
 
-  simulation.nodes(nodes).on('tick', () => {
-    nodeElements
-      .attr('cx', function (node) { return node.x })
-      .attr('cy', function (node) { return node.y })
-    textElements
-      .attr('x', function (node) { return node.x })
-      .attr('y', function (node) { return node.y })
-    linkElements
-      .attr('x1', function (link) { return link.source.x })
-      .attr('y1', function (link) { return link.source.y })
-      .attr('x2', function (link) { return link.target.x })
-      .attr('y2', function (link) { return link.target.y })
-  })
+			textElements = textEnter.merge(textElements)
+		}
 
-  simulation.force('link').links(links)
-  simulation.alphaTarget(0.7).restart()
-}
+		function updateSimulation() {
+			updateGraph()
 
-// last but not least, we call updateSimulation
-// to trigger the initial render
-updateSimulation()
+			simulation.nodes(nodes).on('tick', () => {
+				nodeElements
+					.attr('cx', function (node) { return node.x })
+					.attr('cy', function (node) { return node.y })
+				textElements
+					.attr('x', function (node) { return node.x })
+					.attr('y', function (node) { return node.y })
+				linkElements
+					.attr('x1', function (link) { return link.source.x })
+					.attr('y1', function (link) { return link.source.y })
+					.attr('x2', function (link) { return link.target.x })
+					.attr('y2', function (link) { return link.target.y })
+			})
 
-</script>
+			simulation.force('link').links(links)
+			simulation.alphaTarget(0.7).restart()
+		}
+
+		// last but not least, we call updateSimulation
+		// to trigger the initial render
+		updateSimulation()
+	</script>
+</html>

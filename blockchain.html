@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Blockchain</title>
+	</head>
+	<body>
+	</body>
+	<script>
+		var xmlhttp = new XMLHttpRequest();
+		var url = "https://blockchain.info/multiaddr?active=1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F&cors=true";
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4) {
+				if (this.status == 200) {
+					console.log(JSON.parse(this.responseText));
+				} else {
+					console.log("Error", xmlhttp.statusText);
+				}
+			}
+		};
+		xmlhttp.open("GET", url, true);
+		xmlhttp.send();
+	</script>
+</html>

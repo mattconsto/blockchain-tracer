@@ -6,18 +6,60 @@
 	<body>
 	</body>
 	<script>
-		var xmlhttp = new XMLHttpRequest();
-		var url = "https://blockchain.info/multiaddr?active=1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F&cors=true";
-		xmlhttp.onreadystatechange = function() {
-			if (this.readyState == 4) {
-				if (this.status == 200) {
-					console.log(JSON.parse(this.responseText));
-				} else {
-					console.log("Error", xmlhttp.statusText);
+		var getJSONAsync = function(url, callback, error) {
+			var request = new XMLHttpRequest()
+			request.onreadystatechange = function() {
+				if(this.readyState == 4) {
+					if(this.status == 200) {
+						callback(JSON.parse(this.responseText))
+					} else {
+						error(request.statusText)
+					}
 				}
 			}
-		};
-		xmlhttp.open("GET", url, true);
-		xmlhttp.send();
+			request.open("GET", url, true)
+			request.send()
+		}
+
+		var lookup = function(input, callback, error) {
+			input = input.trim() // Strip Whitespace
+
+			if(/^[0-9a-fA-F]{64}$/.test(input)) {
+				// Transaction (Only one)
+				getJSONAsync("https://blockchain.info/rawtx/" + input + "?cors=true", function(transaction) {
+					// Extract the address and re-lookup
+					lookup(transaction["inputs"][0]["prev_out"]["addr"], callback, error)
+				}, error)
+			} else if(/^([0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{34})(|([0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{34}))*$/.test(input)) {
+				// Address (One or many)
+				getJSONAsync("https://blockchain.info/multiaddr?active=" + input + "&cors=true", callback, error)
+			} else {
+				// Invalid
+				error("Invalid Input!")
+			}
+		}
+
+		lookup("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", function(result) {
+			console.log(result)
+
+			var futureinput = [];
+
+			for(var transaction of result["txs"]) {
+				for(var out of transaction["out"]) {
+					console.log(transaction["inputs"][0]["prev_out"]["addr"], "---", out["value"], "-->", out["addr"])
+					futureinput.push(out["addr"])
+				}
+			}
+
+			console.log(futureinput.join("|"))
+		}, function(status) {
+			console.log("Error", status)
+		})
+
+		// lookup("b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da", function(result) {
+		// 	console.log(result)
+		// }, function(status) {
+		// 	console.log("Error", status)
+		// })
 	</script>
 </html>

@@ -1,2 +1,2 @@
-# fiance-project
+# finance-project
 Computational Finance Group Project

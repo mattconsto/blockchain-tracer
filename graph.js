@@ -1,72 +1,5 @@
-// var baseNodes = [
-// 	{id: "mammal", group: 0, label: "Mammals", level: 1},
-// 	{id: "dog"   , group: 0, label: "Dogs"   , level: 2},
-// 	{id: "cat"   , group: 0, label: "Cats"   , level: 2},
-// 	{id: "fox"   , group: 0, label: "Foxes"  , level: 2},
-// 	{id: "elk"   , group: 0, label: "Elk"    , level: 2},
-// 	{id: "insect", group: 1, label: "Insects", level: 1},
-// 	{id: "ant"   , group: 1, label: "Ants"   , level: 2},
-// 	{id: "bee"   , group: 1, label: "Bees"   , level: 2},
-// 	{id: "fish"  , group: 2, label: "Fish"   , level: 1},
-// 	{id: "carp"  , group: 2, label: "Carp"   , level: 2},
-// 	{id: "pike"  , group: 2, label: "Pikes"  , level: 2}
-// ]
-
-// var baseLinks = [
-// 	{target: "mammal", source: "dog" , strength: 0.7},
-// 	{target: "mammal", source: "cat" , strength: 0.7},
-// 	{target: "mammal", source: "fox" , strength: 0.7},
-// 	{target: "mammal", source: "elk" , strength: 0.7},
-// 	{target: "insect", source: "ant" , strength: 0.7},
-// 	{target: "insect", source: "bee" , strength: 0.7},
-// 	{target: "fish"  , source: "carp", strength: 0.7},
-// 	{target: "fish"  , source: "pike", strength: 0.7},
-// 	{target: "cat"   , source: "elk" , strength: 0.1},
-// 	{target: "carp"  , source: "ant" , strength: 0.1},
-// 	{target: "elk"   , source: "bee" , strength: 0.1},
-// 	{target: "dog"   , source: "cat" , strength: 0.1},
-// 	{target: "fox"   , source: "ant" , strength: 0.1},
-// 	{target: "pike"  , source: "cat" , strength: 0.1}
-// ]
-
-var baseNodes = []
-var baseLinks = []
-
-var nodes = [...baseNodes]
-var links = [...baseLinks]
-
-function getNeighbors(node) {
-	return baseLinks.reduce(function(neighbors, link) {
-			if(link.target.id === node.id) {
-				neighbors.push(link.source.id)
-			} else if(link.source.id === node.id) {
-				neighbors.push(link.target.id)
-			}
-			return neighbors
-		},
-		[node.id]
-	)
-}
-
-function isNeighborLink(node, link) {
-	return link.target.id === node.id || link.source.id === node.id
-}
-
-function getNodeColor(node, neighbors) {
-	if(Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1) {
-		return node.level === 1 ? 'blue' : 'green'
-	} else {
-		return node.level === 1 ? 'red' : 'gray'
-	}
-}
-
-function getLinkColor(node, link) {
-	return isNeighborLink(node, link) ? 'green' : '#E5E5E5'
-}
-
-function getTextColor(node, neighbors) {
-	return Array.isArray(neighbors) && neighbors.indexOf(node.id) > -1 ? 'green' : 'black'
-}
+var nodes = []
+var links = []
 
 var width = window.innerWidth
 var height = window.innerHeight
@@ -80,10 +13,6 @@ var linkElements, nodeElements, textElements
 var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
 var textGroup = svg.append('g').attr('class', 'texts')
-
-// we use this reference to select/deselect
-// after clicking the same element twice
-var selectedId
 
 // simulation setup with all forces
 var linkForce = d3
@@ -114,54 +43,7 @@ var dragDrop = d3.drag().on('start', function(node) {
 // we either update the data according to the selection
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
-	if(selectedId === selectedNode.id) {
-		selectedId = undefined
-		resetData()
-		updateSimulation()
-	} else {
-		selectedId = selectedNode.id
-		updateData(selectedNode)
-		updateSimulation()
-	}
-
-	var neighbors = getNeighbors(selectedNode)
-
-	// we modify the styles to highlight selected nodes
-	nodeElements.attr('fill', function(node) {return getNodeColor(node, neighbors)})
-	textElements.attr('fill', function(node) {return getTextColor(node, neighbors)})
-	linkElements.attr('stroke', function(link) {return getLinkColor(selectedNode, link)})
-}
-
-// this helper simple adds all nodes and links
-// that are missing, to recreate the initial state
-function resetData() {
-	var nodeIds = nodes.map(function(node) {return node.id})
-
-	baseNodes.forEach(function(node) {
-		if(nodeIds.indexOf(node.id) === -1) nodes.push(node)
-	})
-
-	links = baseLinks
-}
-
-// diffing and mutating the data
-function updateData(selectedNode) {
-	var neighbors = getNeighbors(selectedNode)
-	var newNodes = baseNodes.filter(function(node) {
-		return neighbors.indexOf(node.id) > -1 || node.level === 1
-	})
-
-	var diff = {
-		removed: nodes.filter(function(node) {return newNodes.indexOf(node) === -1}),
-		added: newNodes.filter(function(node) {return nodes.indexOf(node) === -1})
-	}
-
-	diff.removed.forEach(function(node) {nodes.splice(nodes.indexOf(node), 1)})
-	diff.added.forEach(function(node) {nodes.push(node)})
-
-	links = baseLinks.filter(function(link) {
-		return link.target.id === selectedNode.id || link.source.id === selectedNode.id
-	})
+	console.log(selectedNode)
 }
 
 function updateGraph() {

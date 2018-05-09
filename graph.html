@@ -13,6 +13,8 @@
 		.card.minimal > * > .input-field > input, .card.minimal > * > .input-field > .select-wrapper > input {margin-bottom: 0; border-bottom: 0}
 		.card.minimal > * > .input-field > label {position: absolute; top: -3em}
 		.card.minimal > * > .range-field > label, .card.minimal > * > .switch > label {position: absolute; top: -2em}
+
+		svg.no-text text {display: none}
 	</style>
 </head>
 <body>
@@ -52,22 +54,31 @@
 					<label>Tracing</label>
 				</div>
 
-				<p class="range-field col s3">
+				<p class="range-field col s2">
 					<label>Depth Limit</label>
 					<input type="range" id="test5" min="0" max="100" />
 				</p>
 
-				<div class="switch col s3">
+				<div class="switch col s2">
 					<label>
 						Live Updates<br/><br/>
 						<input type="checkbox">
 						<span class="lever"></span>
 					</label>
 				</div>
+
+				<div class="switch col s2">
+					<label>
+						Labels<br/><br/>
+						<input type="checkbox" onchange="document.getElementById('canvas').classList.toggle('no-text', this.checked)" />
+						<span class="lever"></span>
+					</label>
+				</div>
 			</div>
 		</div>
 	</div>
-	<svg width="960" height="600"></svg>
+
+	<svg id="canvas"></svg>
 </body>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>

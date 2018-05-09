@@ -76,7 +76,7 @@ var lookup = function(input, callback, error) {
 var existingNodeHashes = new Set();
 var existingTranHashes = new Set();
 
-var updateBlockchain = function(result) {
+var updateBlockchain = function(address, result) {
 	nodes = []
 	links = []
 
@@ -84,11 +84,12 @@ var updateBlockchain = function(result) {
 	existingTranHashes = new Set();
 
 	for(var transaction of result["txs"]) {
+		// console.log(transaction)
 		for(var inputs of transaction["inputs"]) {
 			var addr = inputs["prev_out"]["addr"]
 			if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
 				existingNodeHashes.add(addr)
-				nodes.push({id: addr, group: 0, label: addr, level: 1})
+				nodes.push({id: addr, group: 0, label: addr, level: addr == address ? 1 : 0})
 			}
 		}
 
@@ -96,7 +97,7 @@ var updateBlockchain = function(result) {
 			var addr = out["addr"]
 			if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
 				existingNodeHashes.add(addr)
-				nodes.push({id: addr, group: 0, label: addr, level: 1})
+				nodes.push({id: addr, group: 0, label: addr, level: addr == address ? 1 : 0})
 			}
 		}
 
@@ -104,7 +105,8 @@ var updateBlockchain = function(result) {
 			for(var out of transaction["out"]) {
 				var source = inputs["prev_out"]["addr"]
 				var target = out["addr"]
-				if(typeof source != "undefined" && typeof target != "undefined" && !existingTranHashes.has(source+target)) {
+				// Only care about valid transactions that involve the target
+				if(typeof source != "undefined" && typeof target != "undefined" && (source == address || target == address) && !existingTranHashes.has(source+target)) {
 					existingTranHashes.add(addr)
 					links.push({source: source, target: target, strength: 0.7})
 				}
@@ -118,13 +120,13 @@ var updateBlockchain = function(result) {
 testLocalStorage()
 
 var trace = function(input) {
-	lookup(input, updateBlockchain, function(status) {
+	lookup(input, function(result) {updateBlockchain(input, result)}, function(status) {
 		console.log("Error", status)
 	})
 	return false
 }
 
-lookup("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", updateBlockchain, function(status) {
+lookup("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", function(result) {updateBlockchain("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", result)}, function(status) {
 	console.log("Error", status)
 })
 

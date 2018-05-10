@@ -36,7 +36,7 @@
 		<div class="card minimal col s5">
 			<div class="card-action row">
 				<div class="input-field col s3">
-					<select>
+					<select disabled>
 						<option value="1" selected>Down</option>
 						<option value="2">Up</option>
 						<option value="3">Up &amp; Down</option>
@@ -45,7 +45,7 @@
 				</div>
 
 				<div class="input-field col s3">
-					<select>
+					<select disabled>
 						<option value="1">Poison</option>
 						<option value="2">Haircut</option>
 						<option value="3">FIFO</option>
@@ -56,20 +56,20 @@
 
 				<p class="range-field col s2">
 					<label>Depth Limit</label>
-					<input type="range" id="test5" min="0" max="100" />
+					<input type="range" min="1" max="25" value="2" onchange="maxDepth = parseInt(this.value)" />
 				</p>
 
 				<div class="switch col s2">
 					<label>
 						Live Updates<br/><br/>
-						<input type="checkbox">
+						<input type="checkbox" disabled>
 						<span class="lever"></span>
 					</label>
 				</div>
 
 				<div class="switch col s2">
 					<label>
-						Labels<br/><br/>
+						Node Labels<br/><br/>
 						<input type="checkbox" onchange="document.getElementById('canvas').classList.toggle('no-text', this.checked)" />
 						<span class="lever"></span>
 					</label>
@@ -78,7 +78,7 @@
 		</div>
 	</div>
 
-	<svg id="canvas"></svg>
+	<svg id="canvas" class="no-text"></svg>
 </body>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>

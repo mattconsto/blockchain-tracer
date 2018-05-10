@@ -44,6 +44,10 @@ var dragDrop = d3.drag().on('start', function(node) {
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
 	console.log(selectedNode)
+
+	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, maxDepth, 0)}, function(status) {
+		console.log("Error", status)
+	})
 }
 
 function updateGraph() {

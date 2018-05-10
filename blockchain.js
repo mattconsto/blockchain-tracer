@@ -75,7 +75,7 @@ var lookup = function(input, offset, callback, error) {
 
 var blacklistedAddresses = ["1JArS6jzE3AJ9sZ3aFij1BmTcpFGgN86hA"]
 
-var maxDepth = 2
+var maxDepth = 1
 var existingAddresses = new Set()
 var existingNodeHashes = new Set()
 var existingTranHashes = new Set()
@@ -123,7 +123,7 @@ var updateBlockchain = function(address, result, depth, offset) {
 				}
 			}
 		}
-		
+
 		updateSimulation()
 	}
 
@@ -145,12 +145,12 @@ var updateBlockchain = function(address, result, depth, offset) {
 testLocalStorage()
 
 var trace = function(input) {
-	nodes = []
-	links = []
+	// nodes = []
+	// links = []
 
-	existingAddresses = new Set()
-	existingNodeHashes = new Set()
-	existingTranHashes = new Set()
+	// existingAddresses = new Set()
+	// existingNodeHashes = new Set()
+	// existingTranHashes = new Set()
 	futureAddresses = new Set()
 
 	lookup(input, 0, function(result) {updateBlockchain(input, result, maxDepth, 0)}, function(status) {

@@ -25,6 +25,7 @@ var simulation = d3
 	.force('link', linkForce)
 	.force('charge', d3.forceManyBody().strength(-120))
 	.force('center', d3.forceCenter(width / 2, height / 2))
+  .velocityDecay(0.85)
 
 var dragDrop = d3.drag().on('start', function(node) {
 	node.fx = node.x
@@ -38,6 +39,52 @@ var dragDrop = d3.drag().on('start', function(node) {
 	node.fx = null
 	node.fy = null
 })
+
+d3.select(window).on('resize', resize);
+function resize() {
+	var width = window.innerWidth, height = window.innerHeight;
+	console.trace("Resize", svg.size(), [width, height]);
+	svg.size([width, height]);
+	// lapsedZoomFit(5, 0);
+}
+
+var zoom = d3
+	.zoom()
+	.on('zoom.zoom', function () {
+		console.trace("zoom", d3.event.transform);
+        svg.attr("transform", d3.event.transform)
+	})
+;
+
+function zoomFit(paddingPercent, transitionDuration) {
+	var bounds = svg.node().getBBox();
+	var parent = svg.node().parentElement;
+	var fullWidth = parent.clientWidth,
+	    fullHeight = parent.clientHeight;
+	var width = bounds.width,
+	    height = bounds.height;
+	var midX = bounds.x + width / 2,
+	    midY = bounds.y + height / 2;
+	if (width == 0 || height == 0) return; // nothing to fit
+	var scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
+	var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+
+	// console.trace("zoomFit", translate, scale);
+    svg.transition()
+		.duration(transitionDuration || 0) // milliseconds
+      .call(zoom.transform,
+        d3.zoomIdentity
+        // .translate(translate[0], translate[1])
+        .translate(0, 0)
+        .scale(scale)
+      )
+}
+
+function step(timestamp) {
+	zoomFit(0.85)
+	window.requestAnimationFrame(step);
+}
+window.requestAnimationFrame(step);
 
 // select node is called on every click
 // we either update the data according to the selection

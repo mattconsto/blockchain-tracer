@@ -5,21 +5,25 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<style>
-		body {overflow: hidden}
+		body {overflow: hidden; background: #040404}
+
+		#ui {position: absolute; top: 2em; left: 0; right: 0; z-index: 1000; opacity: 0.9}
 
 		.card.minimal {padding: 0}
 		.card.minimal > * {background: none; padding: 0; margin: 0}
-		.card.minimal > * > .input-field, .card.minimal > * > .range-field {margin: 0}
-		.card.minimal > * > .input-field > input, .card.minimal > * > .input-field > .select-wrapper > input {margin-bottom: 0; border-bottom: 0}
-		.card.minimal > * > .input-field > label {position: absolute; top: -3em}
-		.card.minimal > * > .range-field > label, .card.minimal > * > .switch > label {position: absolute; top: -2em}
+		.card.minimal > * .input-field, .card.minimal * > .range-field {margin: 0}
+		.card.minimal > * .input-field > input, .card.minimal > * .input-field > .select-wrapper > input {margin-bottom: 0; border-bottom: 0}
+		.card.minimal > * .input-field > label {position: absolute; top: -3em}
+		.card.minimal > * .range-field > input {margin-top: 1.25em}
+		.card.minimal > * .btn {height: 100%; transform: scale(1.5)}
+		.card.minimal > * .range-field > label, .card.minimal > * .switch > label {position: absolute; top: -2em}
 
 		svg.no-text text {display: none}
 		svg {overflow: visible !important}
 	</style>
 </head>
 <body>
-	<div class="container row" style="position: absolute; top: 2em; left: 0; right: 0">
+	<div id="ui" class="container row">
 		<div class="card minimal col s5">
 			<div class="card-action row">
 				<form onsubmit="event.preventDefault(); trace(this[0].value)">
@@ -32,20 +36,11 @@
 			</div>
 		</div>
 
-		<div class="col s2"></div>
+		<div class="col s2 xl4"></div>
 
-		<div class="card minimal col s5">
+		<div class="card minimal col s5 xl3">
 			<div class="card-action row">
-				<div class="input-field col s3">
-					<select disabled>
-						<option value="1" selected>Down</option>
-						<option value="2">Up</option>
-						<option value="3">Up &amp; Down</option>
-					</select>
-					<label>Direction</label>
-				</div>
-
-				<div class="input-field col s3">
+				<div class="input-field col s4">
 					<select disabled>
 						<option value="1">Poison</option>
 						<option value="2">Haircut</option>
@@ -55,23 +50,15 @@
 					<label>Tracing</label>
 				</div>
 
-				<p class="range-field col s2">
-					<label>Depth Limit</label>
-					<input type="range" min="1" max="25" value="2" onchange="maxDepth = parseInt(this.value)" />
+				<p class="range-field col s4">
+					<label>Limit</label>
+					<input type="range" min="1" max="5" value="1" onchange="maxDepth = parseInt(this.value)" />
 				</p>
 
-				<div class="switch col s2">
+				<div class="switch col s4">
 					<label>
-						Live Updates<br/><br/>
-						<input type="checkbox" disabled>
-						<span class="lever"></span>
-					</label>
-				</div>
-
-				<div class="switch col s2">
-					<label>
-						Node Labels<br/><br/>
-						<input type="checkbox" onchange="document.getElementById('canvas').classList.toggle('no-text', this.checked)" />
+						Labels<br/><br/>
+						<input type="checkbox" onchange="document.getElementById('canvas').classList.toggle('no-text', !this.checked)" />
 						<span class="lever"></span>
 					</label>
 				</div>

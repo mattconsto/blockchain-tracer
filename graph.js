@@ -23,9 +23,9 @@ var linkForce = d3
 var simulation = d3
 	.forceSimulation()
 	.force('link', linkForce)
-	.force('charge', d3.forceManyBody().strength(-120))
+	.force('charge', d3.forceManyBody().strength(-75))
 	.force('center', d3.forceCenter(width / 2, height / 2))
-  .velocityDecay(0.85)
+  .velocityDecay(0.9)
 
 var dragDrop = d3.drag().on('start', function(node) {
 	node.fx = node.x
@@ -43,15 +43,17 @@ var dragDrop = d3.drag().on('start', function(node) {
 d3.select(window).on('resize', resize);
 function resize() {
 	var width = window.innerWidth, height = window.innerHeight;
-	console.trace("Resize", svg.size(), [width, height]);
+	// console.trace("Resize", svg.size(), [width, height]);
 	svg.size([width, height]);
+	simulation.force('center', d3.forceCenter(width / 2, height / 2))
+	simulation.restart()
 	// lapsedZoomFit(5, 0);
 }
 
 var zoom = d3
 	.zoom()
 	.on('zoom.zoom', function () {
-		console.trace("zoom", d3.event.transform);
+		// console.trace("zoom", d3.event.transform);
         svg.attr("transform", d3.event.transform)
 	})
 ;
@@ -81,7 +83,7 @@ function zoomFit(paddingPercent, transitionDuration) {
 }
 
 function step(timestamp) {
-	zoomFit(0.85)
+	zoomFit(0.9)
 	window.requestAnimationFrame(step);
 }
 window.requestAnimationFrame(step);
@@ -90,8 +92,7 @@ window.requestAnimationFrame(step);
 // we either update the data according to the selection
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
-	console.log(selectedNode)
-
+	d3.select(this).attr('fill', 'rgba(255, 255, 255, 0.5)')
 	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, maxDepth, 0)}, function(status) {
 		console.log("Error", status)
 	})
@@ -107,7 +108,7 @@ function updateGraph() {
 	var linkEnter = linkElements
 		.enter().append('line')
 		.attr('stroke-width', 1)
-		.attr('stroke', 'rgba(50, 50, 50, 0.2)')
+		.attr('stroke', 'rgba(255, 255, 255, 0.2)')
 
 	linkElements = linkEnter.merge(linkElements)
 
@@ -121,7 +122,9 @@ function updateGraph() {
 		.enter()
 		.append('circle')
 		.attr('r', 10)
-		.attr('fill', function(node) {return node.level === 1 ? 'red' : 'gray'})
+		.attr('fill', function(node) {
+			return node.level === 1 ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 195, 255, 0.85)'}
+		)
 		.call(dragDrop)
 		// we link the selectNode method here
 		// to update the graph on every click
@@ -138,6 +141,7 @@ function updateGraph() {
 	var textEnter = textElements
 		.enter()
 		.append('text')
+		.attr('fill', 'white')
 		.text(function(node) {return node.label})
 		.attr('font-size', 15)
 		.attr('dx', 15)

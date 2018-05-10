@@ -62,7 +62,7 @@ var lookup = function(input, offset, callback, error) {
 		// Transaction (Only one)
 		cachedJSONAsync("https://blockchain.info/rawtx/" + input + "?cors=true", function(transaction) {
 			// Extract the address and re-lookup
-			lookup(transaction["inputs"][0]["prev_out"]["addr"], callback, error)
+			lookup(transaction["inputs"][0]["prev_out"]["addr"], 0, callback, error)
 		}, error)
 	} else if(/^([0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{33,34})(\|([0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{33,34}))*$/.test(input)) {
 		// Address (One or many)
@@ -117,7 +117,7 @@ var updateBlockchain = function(address, result, depth, offset) {
 					// Only care about valid transactions that involve the target
 					if(typeof source != "undefined" && typeof target != "undefined" && !existingTranHashes.has(source+target)) {
 					// if(typeof source != "undefined" && typeof target != "undefined" && (source == address || target == address) && !existingTranHashes.has(source+target)) {
-						existingTranHashes.add(addr)
+						existingTranHashes.add(source+target)
 						links.push({source: source, target: target, strength: 0.7})
 					}
 				}
@@ -144,16 +144,16 @@ var updateBlockchain = function(address, result, depth, offset) {
 
 testLocalStorage()
 
-var trace = function(input) {
-	// nodes = []
-	// links = []
+var trace = function(hash) {
+	nodes = []
+	links = []
 
-	// existingAddresses = new Set()
-	// existingNodeHashes = new Set()
-	// existingTranHashes = new Set()
+	existingAddresses = new Set()
+	existingNodeHashes = new Set()
+	existingTranHashes = new Set()
 	futureAddresses = new Set()
 
-	lookup(input, 0, function(result) {updateBlockchain(input, result, maxDepth, 0)}, function(status) {
+	lookup(hash, 0, function(result) {updateBlockchain(hash, result, maxDepth, 0)}, function(status) {
 		console.log("Error", status)
 	})
 	return false

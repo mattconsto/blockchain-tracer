@@ -43,20 +43,13 @@ var dragDrop = d3.drag().on('start', function(node) {
 d3.select(window).on('resize', resize);
 function resize() {
 	var width = window.innerWidth, height = window.innerHeight;
-	// console.trace("Resize", svg.size(), [width, height]);
 	svg.size([width, height]);
 	simulation.force('center', d3.forceCenter(width / 2, height / 2))
 	simulation.restart()
 	// lapsedZoomFit(5, 0);
 }
 
-var zoom = d3
-	.zoom()
-	.on('zoom.zoom', function () {
-		// console.trace("zoom", d3.event.transform);
-        svg.attr("transform", d3.event.transform)
-	})
-;
+var zoom = d3.zoom().on('zoom.zoom', function () {svg.attr("transform", d3.event.transform)})
 
 function zoomFit(paddingPercent, transitionDuration) {
 	var bounds = svg.node().getBBox();
@@ -71,16 +64,18 @@ function zoomFit(paddingPercent, transitionDuration) {
 	var scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
 	var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 
-	// console.trace("zoomFit", translate, scale);
-    svg.transition()
+	svg.transition()
 		.duration(transitionDuration || 0) // milliseconds
-      .call(zoom.transform,
-        d3.zoomIdentity
-        // .translate(translate[0], translate[1])
-        .translate(0, 0)
-        .scale(scale)
-      )
+		.call(zoom.transform,
+			d3.zoomIdentity
+			// .translate(translate[0], translate[1])
+			.translate(0, 0)
+			.scale(scale)
+		)
 }
+
+// Define the div for the tooltip
+var tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
 function step(timestamp) {
 	zoomFit(0.9)
@@ -125,17 +120,21 @@ function updateGraph() {
 		.attr('fill', function(node) {
 			return node.level === 1 ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 195, 255, 0.85)'}
 		)
+		.style('cursor', 'pointer')
 		.call(dragDrop)
 		// we link the selectNode method here
 		// to update the graph on every click
 		.on('click', selectNode)
+		.on("mouseover", function(d) {
+			tooltip.transition().duration(200).style("opacity", .9)
+			tooltip.html(d.id).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
+		})
+		.on("mouseout", function(d) {tooltip.transition().duration(500).style("opacity", 0)})
 
 	nodeElements = nodeEnter.merge(nodeElements)
 
 	// texts
-	textElements = textGroup.selectAll('text')
-		.data(nodes, function(node) {return node.id})
-
+	textElements = textGroup.selectAll('text').data(nodes, function(node) {return node.id})
 	textElements.exit().remove()
 
 	var textEnter = textElements

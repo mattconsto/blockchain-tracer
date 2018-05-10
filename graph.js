@@ -103,6 +103,8 @@ function updateGraph() {
 	var linkEnter = linkElements
 		.enter().append('line')
 		.attr('stroke-width', 1)
+		.attr('id', function(node) {return 'link_' + node.source + '_' + node.target})
+		.attr('class', function(node) {return 'connects_' + node.source + ' connects_' + node.target})
 		.attr('stroke', 'rgba(255, 255, 255, 0.2)')
 
 	linkElements = linkEnter.merge(linkElements)
@@ -117,6 +119,7 @@ function updateGraph() {
 		.enter()
 		.append('circle')
 		.attr('r', 10)
+		.attr('id', function(node) {return 'node_' + node.id})
 		.attr('fill', function(node) {
 			return node.level === 1 ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 195, 255, 0.85)'}
 		)
@@ -128,8 +131,12 @@ function updateGraph() {
 		.on("mouseover", function(d) {
 			tooltip.transition().duration(200).style("opacity", .9)
 			tooltip.html(d.id).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
+			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(255, 255, 255, 1)')
 		})
-		.on("mouseout", function(d) {tooltip.transition().duration(500).style("opacity", 0)})
+		.on("mouseout", function(d) {
+			tooltip.transition().duration(500).style("opacity", 0)
+			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(255, 255, 255, 0.2)')
+		})
 
 	nodeElements = nodeEnter.merge(nodeElements)
 
@@ -141,6 +148,7 @@ function updateGraph() {
 		.enter()
 		.append('text')
 		.attr('fill', 'white')
+		.attr('id', function(node) {return 'text_' + node.label})
 		.text(function(node) {return node.label})
 		.attr('font-size', 15)
 		.attr('dx', 15)

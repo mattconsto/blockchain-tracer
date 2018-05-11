@@ -7,6 +7,20 @@ var height = window.innerHeight
 var svg = d3.select('svg')
 svg.attr('width', width).attr('height', height)
 
+svg.append('defs').append('marker')
+	.attr('id', 'arrowhead')
+	.attr('viewBox', '-0 -5 10 10')
+	.attr('refX', 13)
+	.attr('refY', 0)
+	.attr('orient', 'auto')
+	.attr('markerWidth', 1)
+	.attr('markerHeight', 10)
+	.attr('xoverflow', 'visible')
+	.append('svg:path')
+	.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+	.attr('fill', 'rgb(127, 127, 127)')
+	.style('stroke','none');
+
 var linkElements, nodeElements, textElements
 
 // we use svg groups to logically group the elements together
@@ -55,11 +69,11 @@ function zoomFit(paddingPercent, transitionDuration) {
 	var bounds = svg.node().getBBox();
 	var parent = svg.node().parentElement;
 	var fullWidth = parent.clientWidth,
-	    fullHeight = parent.clientHeight;
+		fullHeight = parent.clientHeight;
 	var width = bounds.width,
-	    height = bounds.height;
+		height = bounds.height;
 	var midX = bounds.x + width / 2,
-	    midY = bounds.y + height / 2;
+		midY = bounds.y + height / 2;
 	if (width == 0 || height == 0) return; // nothing to fit
 	var scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
 	var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
@@ -113,7 +127,9 @@ function updateGraph() {
 		.attr('stroke-width', 1)
 		.attr('id', function(node) {return 'link_' + node.source + '_' + node.target})
 		.attr('class', function(node) {return 'connects_' + node.source + ' connects_' + node.target})
-		.attr('stroke', 'rgba(127, 127, 127, 0.2)')
+		.attr('stroke', 'rgb(127, 127, 127)')
+		.attr('opacity', '0.25')
+		.attr('marker-end','url(#arrowhead)')
 
 	linkElements = linkEnter.merge(linkElements)
 
@@ -152,11 +168,11 @@ function updateGraph() {
 			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].length)
 
 			tooltip.style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
-			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(127, 127, 127, 1)')
+			d3.selectAll(".connects_" + d.id).attr('opacity', '1')
 		})
 		.on("mouseout", function(d) {
 			tooltip.transition().duration(500).style("opacity", 0)
-			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(127, 127, 127, 0.2)')
+			d3.selectAll(".connects_" + d.id).attr('opacity', '0.25')
 		})
 
 	nodeElements = nodeEnter.merge(nodeElements)

@@ -96,18 +96,19 @@ var updateBlockchain = function(address, result, offset) {
 			// console.log(transaction)
 			for(var inputs of transaction["inputs"]) {
 				var addr = inputs["prev_out"]["addr"]
-				if(typeof addr == "undefined" ) continue
+				if(typeof addr == "undefined" || typeof inputs == "undefined") continue
+
 				if(!estimatedAddreses.has(addr)) {
 					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
 					estimatedAddreses.set(addr, 0)
 				} else {
-					estimatedAddreses.set(addr, Math.max(0, estimatedAddreses.get(addr) - out["value"]))
+					estimatedAddreses.set(addr, Math.max(0, estimatedAddreses.get(addr) - inputs["prev_out"]["value"]))
 				}
 			}
 
 			for(var out of transaction["out"]) {
 				var addr = out["addr"]
-				if(typeof addr == "undefined") continue
+				if(typeof addr == "undefined" || typeof out == "undefined") continue
 				if(!estimatedAddreses.has(addr)) {
 					estimatedAddreses.set(addr, out["value"])
 					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})

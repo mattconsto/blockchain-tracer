@@ -142,8 +142,9 @@ function updateGraph() {
 		.on("mouseover", function(d) {
 			tooltip.transition().duration(200).style("opacity", .9)
 
-			tooltip.select('#tooltip-title').html(d.label)
 			var balance = (discoveredAddresses.has(d.id) ? discoveredAddresses.get(d.id)["final_balance"] : estimatedAddreses.has(d.id) ? estimatedAddreses.get(d.id) : 0) / 100000000.0
+			
+			tooltip.select('#tooltip-title').html(d.label)
 			tooltip.select('#tooltip-value').html(balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
 
 			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].length + linkedAddresses.get(d.id)["in"].length)

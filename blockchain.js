@@ -73,35 +73,46 @@ var lookup = function(input, offset, callback, error) {
 	}
 }
 
+var dollarsToBitcoin = -1;
 var blacklistedAddresses = ["1JArS6jzE3AJ9sZ3aFij1BmTcpFGgN86hA"]
 
-var existingAddresses = new Set()
-var existingNodeHashes = new Set()
-var existingTranHashes = new Set()
+var estimatedAddreses = new Map()
+var discoveredAddresses = new Map()
+var discoveredLinks = new Set()
+var linkedAddresses = new Map()
 
 var updateBlockchain = function(address, result, offset) {
 	console.log(address, offset)
 	window.location.hash = "!" + address
 
-	if(result["txs"].length > 0) {
-		existingAddresses.add(address) // Mark current
+	dollarsToBitcoin = result["info"]["symbol_local"]["conversion"]
 
+	for(var addr of result["addresses"]) {
+		discoveredAddresses.set(addr.address, addr)
+	}
+
+	if(result["txs"].length > 0) {
 		for(var transaction of result["txs"]) {
 			// console.log(transaction)
 			for(var inputs of transaction["inputs"]) {
 				var addr = inputs["prev_out"]["addr"]
-				if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
-					existingNodeHashes.add(addr)
+				if(typeof addr == "undefined" ) continue
+				if(!estimatedAddreses.has(addr)) {
 					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
+					estimatedAddreses.set(addr, 0)
+				} else {
+					estimatedAddreses.set(addr, Math.max(0, estimatedAddreses.get(addr) - out["value"]))
 				}
 			}
 
 			for(var out of transaction["out"]) {
 				var addr = out["addr"]
-				if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
-					existingNodeHashes.add(addr)
-					if(addr in addressTags) {}
+				if(typeof addr == "undefined") continue
+				if(!estimatedAddreses.has(addr)) {
+					estimatedAddreses.set(addr, out["value"])
 					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
+				} else {
+					estimatedAddreses.set(addr, estimatedAddreses.get(addr) + out["value"])
 				}
 			}
 
@@ -110,10 +121,17 @@ var updateBlockchain = function(address, result, offset) {
 					var source = inputs["prev_out"]["addr"]
 					var target = out["addr"]
 					// Only care about valid transactions that involve the target
-					if(typeof source != "undefined" && typeof target != "undefined" && !existingTranHashes.has(source+target)) {
-						existingTranHashes.add(source+target)
+					if(typeof source == "undefined" || typeof target == "undefined") continue
+
+					if(!discoveredLinks.has(source+target)) {
+						discoveredLinks.add(source+target)
 						links.push({source: source, target: target, strength: 0.7})
 					}
+
+					if(!linkedAddresses.has(source)) linkedAddresses.set(source, {"in": [], "out": []})
+					if(!linkedAddresses.has(target)) linkedAddresses.set(target, {"in": [], "out": []})
+					linkedAddresses.get(source)["out"].push(transaction)
+					linkedAddresses.get(target)["in"].push(transaction)
 				}
 			}
 		}
@@ -135,9 +153,8 @@ var trace = function(hash) {
 	nodes = []
 	links = []
 
-	existingAddresses = new Set()
-	existingNodeHashes = new Set()
-	existingTranHashes = new Set()
+	discoveredAddresses = new Set()
+	discoveredLinks = new Set()
 
 	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 0)}, function(status) {
 		console.log("Error", status)

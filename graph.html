@@ -20,16 +20,9 @@
 		#canvas.no-text text {display: none}
 		#canvas {overflow: visible !important}
 
-		.tooltip {
+		#tooltip {
 			position: absolute;
-			text-align: center;
-			width: 300px;
-			height: 20px;
-			padding: 2px;
-			font: 12px sans-serif;
-			background: lightsteelblue;
-			border: 0px;
-			border-radius: 8px;
+			opacity: 0;
 			pointer-events: none;
 		}
 
@@ -104,6 +97,25 @@
 	</div>
 
 	<svg id="canvas" class="no-text"></svg>
+
+	<div id="tooltip" class="card">
+		<div class="card-content">
+			<p id="tooltip-title">Unknown</p>
+			<p id="tooltip-value">Unknown</p>
+		</div>
+		<div class="card-tabs">
+			<ul class="tabs tabs-fixed-width">
+				<li class="tab"><a href="#tooltip-all" class="active"><span id="tooltip-allcount"></span> Total</a></li>
+				<li class="tab"><a href="#tooltip-in"><span id="tooltip-incount"></span> Incoming</a></li>
+				<li class="tab"><a href="#tooltip-out"><span id="tooltip-outcount"></span> Outgoing</a></li>
+			</ul>
+		</div>
+		<div class="card-content grey lighten-4">
+			<!-- <div id="tooltip-all"></div> -->
+			<div id="tooltip-in"></div>
+			<div id="tooltip-out"></div>
+		</div>
+	</div>
 
 	<!-- Dropdown Structure -->
 	<ul id='dropdown' class='dropdown-content'>

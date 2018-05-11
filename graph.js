@@ -23,7 +23,7 @@ var linkForce = d3
 var simulation = d3
 	.forceSimulation()
 	.force('link', linkForce)
-	.force('charge', d3.forceManyBody().strength(-75))
+	.force('charge', d3.forceManyBody().strength(-100))
 	.force('center', d3.forceCenter(width / 2, height / 2))
 	.velocityDecay(0.92)
 
@@ -75,7 +75,7 @@ function zoomFit(paddingPercent, transitionDuration) {
 }
 
 // Define the div for the tooltip
-var tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+var tooltip = d3.select("#tooltip").style("opacity", 0);
 
 function step(timestamp) {
 	zoomFit(0.9)
@@ -126,7 +126,10 @@ function updateGraph() {
 	var nodeEnter = nodeElements
 		.enter()
 		.append('circle')
-		.attr('r', 10)
+		.attr('r', function(node) {
+			var balance = (discoveredAddresses.has(node.id) ? discoveredAddresses.get(node.id)["final_balance"] : estimatedAddreses.get(node.id)) / 100000000.0
+			return Math.log(Math.max(1, balance)) * 10 + 10
+		})
 		.attr('id', function(node) {return 'node_' + node.id})
 		.attr('fill', function(node) {
 			return node.level === 1 ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 195, 255, 0.85)'}
@@ -138,7 +141,16 @@ function updateGraph() {
 		.on('click', selectNode)
 		.on("mouseover", function(d) {
 			tooltip.transition().duration(200).style("opacity", .9)
-			tooltip.html(d.label).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
+
+			tooltip.select('#tooltip-title').html(d.label)
+			var balance = (discoveredAddresses.has(d.id) ? discoveredAddresses.get(d.id)["final_balance"] : estimatedAddreses.has(d.id) ? estimatedAddreses.get(d.id) : 0) / 100000000.0
+			tooltip.select('#tooltip-value').html(balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
+
+			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].length + linkedAddresses.get(d.id)["in"].length)
+			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].length)
+			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].length)
+
+			tooltip.style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
 			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(127, 127, 127, 1)')
 		})
 		.on("mouseout", function(d) {

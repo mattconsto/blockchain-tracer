@@ -25,7 +25,7 @@ var simulation = d3
 	.force('link', linkForce)
 	.force('charge', d3.forceManyBody().strength(-75))
 	.force('center', d3.forceCenter(width / 2, height / 2))
-  .velocityDecay(0.9)
+	.velocityDecay(0.92)
 
 var dragDrop = d3.drag().on('start', function(node) {
 	node.fx = node.x
@@ -49,7 +49,7 @@ function resize() {
 	// lapsedZoomFit(5, 0);
 }
 
-var zoom = d3.zoom().on('zoom.zoom', function () {svg.attr("transform", d3.event.transform)})
+// var zoom = d3.zoom().on('zoom.zoom', function () {svg.attr("transform", d3.event.transform)})
 
 function zoomFit(paddingPercent, transitionDuration) {
 	var bounds = svg.node().getBBox();
@@ -81,14 +81,24 @@ function step(timestamp) {
 	zoomFit(0.9)
 	window.requestAnimationFrame(step);
 }
-window.requestAnimationFrame(step);
+// window.requestAnimationFrame(step);
+
+svg.call(d3.zoom()
+    .scaleExtent([1 / 2, 8])
+    .on("zoom", zoomed));
+ 
+function zoomed() {
+  nodeGroup.attr("transform", d3.event.transform);
+  linkGroup.attr("transform", d3.event.transform);
+  textGroup.attr("transform", d3.event.transform);
+}
 
 // select node is called on every click
 // we either update the data according to the selection
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
-	d3.select(this).attr('fill', 'rgba(255, 255, 255, 0.5)')
-	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, maxDepth, 0)}, function(status) {
+	d3.select(this).attr('fill', 'rgba(127, 127, 127, 0.5)')
+	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, 1, 0)}, function(status) {
 		console.log("Error", status)
 	})
 }
@@ -105,7 +115,7 @@ function updateGraph() {
 		.attr('stroke-width', 1)
 		.attr('id', function(node) {return 'link_' + node.source + '_' + node.target})
 		.attr('class', function(node) {return 'connects_' + node.source + ' connects_' + node.target})
-		.attr('stroke', 'rgba(255, 255, 255, 0.2)')
+		.attr('stroke', 'rgba(127, 127, 127, 0.2)')
 
 	linkElements = linkEnter.merge(linkElements)
 
@@ -131,11 +141,11 @@ function updateGraph() {
 		.on("mouseover", function(d) {
 			tooltip.transition().duration(200).style("opacity", .9)
 			tooltip.html(d.id).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
-			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(255, 255, 255, 1)')
+			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(127, 127, 127, 1)')
 		})
 		.on("mouseout", function(d) {
 			tooltip.transition().duration(500).style("opacity", 0)
-			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(255, 255, 255, 0.2)')
+			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(127, 127, 127, 0.2)')
 		})
 
 	nodeElements = nodeEnter.merge(nodeElements)
@@ -147,7 +157,7 @@ function updateGraph() {
 	var textEnter = textElements
 		.enter()
 		.append('text')
-		.attr('fill', 'white')
+		.attr('fill', 'rgab(127, 127, 127, 1)')
 		.attr('id', function(node) {return 'text_' + node.label})
 		.text(function(node) {return node.label})
 		.attr('font-size', 15)

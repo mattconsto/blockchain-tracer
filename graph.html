@@ -18,8 +18,8 @@
 		.card.minimal > * .btn {height: 100%; transform: scale(1.5)}
 		.card.minimal > * .range-field > label, .card.minimal > * .switch > label {position: absolute; top: -2em}
 
-		svg.no-text text {display: none}
-		svg {overflow: visible !important}
+		#canvas.no-text text {display: none}
+		#canvas {overflow: visible !important}
 
 		.tooltip {
 			position: absolute;
@@ -53,7 +53,7 @@
 
 		<div class="card minimal col s5 xl3">
 			<div class="card-action row">
-				<div class="input-field col s4">
+				<div class="input-field col s3">
 					<select disabled>
 						<option value="1">Poison</option>
 						<option value="2">Haircut</option>
@@ -63,15 +63,31 @@
 					<label>Tracing</label>
 				</div>
 
-				<p class="range-field col s4">
+				<!-- <p class="range-field col s4">
 					<label>Limit</label>
 					<input type="range" min="1" max="5" value="1" onchange="maxDepth = parseInt(this.value)" />
-				</p>
+				</p> -->
 
-				<div class="switch col s4">
+				<div class="switch col s3">
+					<label>
+						Invert<br/><br/>
+						<input type="checkbox" checked onchange="document.getElementsByTagName('body')[0].style.background = !this.checked ? 'white' : 'black'" />
+						<span class="lever"></span>
+					</label>
+				</div>
+
+				<div class="switch col s3">
 					<label>
 						Labels<br/><br/>
 						<input type="checkbox" onchange="document.getElementById('canvas').classList.toggle('no-text', !this.checked)" />
+						<span class="lever"></span>
+					</label>
+				</div>
+
+				<div class="switch col s3">
+					<label>
+						Simulation<br/><br/>
+						<input type="checkbox" checked onchange="this.checked ? simulation.velocityDecay(0.92) : simulation.velocityDecay(1)" />
 						<span class="lever"></span>
 					</label>
 				</div>

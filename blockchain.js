@@ -14,15 +14,15 @@ var getJSONAsync = function(url, callback, error) {
 }
 
 var testLocalStorage = function() {
-	// var test = "test"
-	// try {
-	// 	localStorage.setItem(test, test)
-	// 	localStorage.removeItem(test)
-	// 	return true
-	// } catch(e) {
-	// 	delete localStorage // Delete localStorage for faster checking
-	// 	return false
-	// }
+	var test = "test"
+	try {
+		localStorage.setItem(test, test)
+		localStorage.removeItem(test)
+		return true
+	} catch(e) {
+		delete localStorage // Delete localStorage for faster checking
+		return false
+	}
 }
 
 var cachedJSONAsync = function(url, callback, error) {
@@ -75,7 +75,6 @@ var lookup = function(input, offset, callback, error) {
 
 var blacklistedAddresses = ["1JArS6jzE3AJ9sZ3aFij1BmTcpFGgN86hA"]
 
-var maxDepth = 1
 var existingAddresses = new Set()
 var existingNodeHashes = new Set()
 var existingTranHashes = new Set()
@@ -153,13 +152,13 @@ var trace = function(hash) {
 	existingTranHashes = new Set()
 	futureAddresses = new Set()
 
-	lookup(hash, 0, function(result) {updateBlockchain(hash, result, maxDepth, 0)}, function(status) {
+	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 1, 0)}, function(status) {
 		console.log("Error", status)
 	})
 	return false
 }
 
-lookup("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", 0, function(result) {updateBlockchain("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", result, maxDepth, 0)}, function(status) {
+lookup("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", 0, function(result) {updateBlockchain("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", result, 1, 0)}, function(status) {
 	console.log("Error", status)
 })
 

@@ -83,14 +83,12 @@ function step(timestamp) {
 }
 // window.requestAnimationFrame(step);
 
-svg.call(d3.zoom()
-    .scaleExtent([1 / 2, 8])
-    .on("zoom", zoomed));
- 
+svg.call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", zoomed));
+
 function zoomed() {
-  nodeGroup.attr("transform", d3.event.transform);
-  linkGroup.attr("transform", d3.event.transform);
-  textGroup.attr("transform", d3.event.transform);
+	nodeGroup.attr("transform", d3.event.transform);
+	linkGroup.attr("transform", d3.event.transform);
+	textGroup.attr("transform", d3.event.transform);
 }
 
 // select node is called on every click
@@ -98,7 +96,7 @@ function zoomed() {
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
 	d3.select(this).attr('fill', 'rgba(127, 127, 127, 0.5)')
-	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, 1, 0)}, function(status) {
+	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, 0)}, function(status) {
 		console.log("Error", status)
 	})
 }

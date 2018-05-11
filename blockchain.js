@@ -78,13 +78,10 @@ var blacklistedAddresses = ["1JArS6jzE3AJ9sZ3aFij1BmTcpFGgN86hA"]
 var existingAddresses = new Set()
 var existingNodeHashes = new Set()
 var existingTranHashes = new Set()
-var futureAddresses = new Set()
 
-var updateBlockchain = function(address, result, depth, offset) {
-	console.log(address, depth, offset)
-
-	// Stop after limit runs out
-	if(depth <= 0) return
+var updateBlockchain = function(address, result, offset) {
+	console.log(address, offset)
+	window.location.hash = "!" + address
 
 	if(result["txs"].length > 0) {
 		existingAddresses.add(address) // Mark current
@@ -94,7 +91,6 @@ var updateBlockchain = function(address, result, depth, offset) {
 			for(var inputs of transaction["inputs"]) {
 				var addr = inputs["prev_out"]["addr"]
 				if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
-					if(!existingAddresses.has(addr) && !blacklistedAddresses.includes(addr)) futureAddresses.add(addr)
 					existingNodeHashes.add(addr)
 					nodes.push({id: addr, group: 0, label: addr, level: addr == address ? 1 : 0})
 				}
@@ -103,7 +99,6 @@ var updateBlockchain = function(address, result, depth, offset) {
 			for(var out of transaction["out"]) {
 				var addr = out["addr"]
 				if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
-					if(!existingAddresses.has(addr) && !blacklistedAddresses.includes(addr)) futureAddresses.add(addr)
 					existingNodeHashes.add(addr)
 					nodes.push({id: addr, group: 0, label: addr, level: addr == address ? 1 : 0})
 				}
@@ -115,7 +110,6 @@ var updateBlockchain = function(address, result, depth, offset) {
 					var target = out["addr"]
 					// Only care about valid transactions that involve the target
 					if(typeof source != "undefined" && typeof target != "undefined" && !existingTranHashes.has(source+target)) {
-					// if(typeof source != "undefined" && typeof target != "undefined" && (source == address || target == address) && !existingTranHashes.has(source+target)) {
 						existingTranHashes.add(source+target)
 						links.push({source: source, target: target, strength: 0.7})
 					}
@@ -128,14 +122,7 @@ var updateBlockchain = function(address, result, depth, offset) {
 
 	if(result["txs"].length == 100) {
 		// Recurse
-		lookup(address, offset+100, function(result) {updateBlockchain(address, result, depth, offset+100)}, function(status) {
-			console.log("Error", status)
-		})
-	} else {
-		// Recurse
-		var newAddresses = Array.from(futureAddresses).sort().join("|")
-		futureAddresses = new Set()
-		lookup(newAddresses, 0, function(result) {updateBlockchain(newAddresses, result, depth-1, 0)}, function(status) {
+		lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100)}, function(status) {
 			console.log("Error", status)
 		})
 	}
@@ -150,20 +137,9 @@ var trace = function(hash) {
 	existingAddresses = new Set()
 	existingNodeHashes = new Set()
 	existingTranHashes = new Set()
-	futureAddresses = new Set()
 
-	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 1, 0)}, function(status) {
+	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 0)}, function(status) {
 		console.log("Error", status)
 	})
 	return false
 }
-
-lookup("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", 0, function(result) {updateBlockchain("1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F", result, 1, 0)}, function(status) {
-	console.log("Error", status)
-})
-
-// lookup("b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da", function(result) {
-// 	console.log(result)
-// }, function(status) {
-// 	console.log("Error", status)
-// })

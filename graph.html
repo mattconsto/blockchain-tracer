@@ -13,7 +13,6 @@
 		.card.minimal > * {background: none; padding: 0; margin: 0}
 		.card.minimal > * .input-field, .card.minimal * > .range-field {margin: 0}
 		.card.minimal > * .input-field > input, .card.minimal > * .input-field > .select-wrapper > input {margin-bottom: 0; border-bottom: 0}
-		.card.minimal > * .input-field > label {position: absolute; top: -3em}
 		.card.minimal > * .range-field > input {margin-top: 1.25em}
 		.card.minimal > * .btn {height: 100%; transform: scale(1.5)}
 		.card.minimal > * .range-field > label, .card.minimal > * .switch > label {position: absolute; top: -2em}
@@ -46,32 +45,36 @@
 					<div class="input-field col s10">
 						<input placeholder="Address/Transaction Hash" id="hash" type="text" value="1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F">
 					</div>
-					<button class="btn waves-effect waves-light col s2" type="submit" name="action"><i class="material-icons">arrow_forward</i>
-					</button>
+					<button class="btn waves-effect waves-light col s2" type="submit" name="action"><i class="material-icons">arrow_forward</i></button>
 				</form>
 			</div>
 		</div>
 
 		<div class="col s1"></div>
 
-		<div class="card minimal col s5 ">
+		<div class="card minimal col s5">
 			<div class="card-action row">
-				<div class="input-field col s3">
+				<div class="input-field col s2">
 					<select disabled>
 						<option value="1">Poison</option>
 						<option value="2">Haircut</option>
 						<option value="3">FIFO</option>
 						<option value="3">FILO</option>
 					</select>
-					<label>Tracing</label>
+					<label style="position: absolute; top: -3em; font-size: 0.8em">Tracing</label>
 				</div>
 
-				<!-- <p class="range-field col s4">
-					<label>Limit</label>
-					<input type="range" min="1" max="5" value="1" onchange="maxDepth = parseInt(this.value)" />
-				</p> -->
+				<div class="input-field col s2">
+					<input type="text" class="datepicker" value="2009/01/01" disabled>
+					<label style="position: absolute; top: -0.6em">From</label>
+				</div>
 
-				<div class="switch col s3">
+				<div class="input-field col s2">
+					<input type="text" class="datepicker" value="2099/01/01" disabled>
+					<label style="position: absolute; top: -0.6em">To</label>
+				</div>
+
+				<div class="switch col s2">
 					<label>
 						Invert<br/><br/>
 						<input type="checkbox" checked onchange="document.getElementsByTagName('body')[0].style.background = !this.checked ? 'white' : 'black'" />
@@ -79,7 +82,7 @@
 					</label>
 				</div>
 
-				<div class="switch col s3">
+				<div class="switch col s2">
 					<label>
 						Labels<br/><br/>
 						<input type="checkbox" onchange="document.getElementById('canvas').classList.toggle('no-text', !this.checked)" />
@@ -87,7 +90,7 @@
 					</label>
 				</div>
 
-				<div class="switch col s3">
+				<div class="switch col s2">
 					<label>
 						Simulation<br/><br/>
 						<input type="checkbox" checked onchange="this.checked ? simulation.velocityDecay(0.92) : simulation.velocityDecay(1)" />
@@ -149,6 +152,14 @@
 			M.Dropdown.init(document.querySelectorAll('.dropdown-trigger', {'alignment': 'right', 'constrainWidth': false, 'coverTrigger': false}))
 			M.FormSelect.init(document.querySelectorAll('select'))
 			M.Modal.init(document.querySelectorAll('.modal'))
+			M.Datepicker.init(document.querySelectorAll('.datepicker'))
+
+			// Automatically navigate on load.
+			var addresshash = document.getElementById('hash')
+			if(window.location.hash.startsWith("#!")) addresshash.value = window.location.hash.substr(2)
+			lookup(addresshash.value, 0, function(result) {updateBlockchain(addresshash.value, result, 0)}, function(status) {
+				console.log("Error", status)
+			})
 		})
 
 		function saveSvg(svgEl, name) {
@@ -190,6 +201,6 @@
 			textarea.select();
 			document.execCommand('copy');
 			document.body.removeChild(textarea);
-		};
+		}
 	</script>
 </html>

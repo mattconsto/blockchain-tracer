@@ -33,6 +33,9 @@
 			border-radius: 8px;
 			pointer-events: none;
 		}
+
+		.dropdown-content {width: fit-content !important; height: auto !important; margin-top: 3em}
+		#toast-container {top: auto; bottom: 2%; left: 0; right: 0; margin: auto; max-width: fit-content}
 	</style>
 </head>
 <body>
@@ -49,9 +52,9 @@
 			</div>
 		</div>
 
-		<div class="col s2 xl4"></div>
+		<div class="col s1"></div>
 
-		<div class="card minimal col s5 xl3">
+		<div class="card minimal col s5 ">
 			<div class="card-action row">
 				<div class="input-field col s3">
 					<select disabled>
@@ -93,15 +96,100 @@
 				</div>
 			</div>
 		</div>
+		<!-- Dropdown Trigger -->
+		<a class='dropdown-trigger btn-flat col s1' href='#' data-target='dropdown'><i class="material-icons" style="color: #aaa; font-size: 3em; margin-top: 0.3em">more_vert</i></a>
 	</div>
 
 	<svg id="canvas" class="no-text"></svg>
+
+	<!-- Dropdown Structure -->
+	<ul id='dropdown' class='dropdown-content'>
+		<li><a href="javascript:copyToClipboard(window.location); M.toast({html: 'Copied to Clipboard'})">Share<i class="material-icons left">share</i></a></li>
+		<li><a href="javascript:saveSvg(document.getElementById('canvas'), 'graph.svg')">Graph<i class="material-icons left">file_download</i></a></li>
+		<li><a href="javascript:saveText(JSON.stringify([nodes, links]), 'data.json');">Data<i class="material-icons left">file_download</i></a></li>
+		<li class="divider" tabindex="-1"></li>
+		<li><a href="https://consto.uk/blockchain-tracer/report.pdf" target="_blank">Report<i class="material-icons left">launch</i></a></li>
+		<li><a href="#modal-help" class="modal-trigger">Help<i class="material-icons left">help_outline</i></a></li>
+		<li><a href="#modal-about" class="modal-trigger">About<i class="material-icons left">info_outline</i></a></li>
+		<li class="divider" tabindex="-1"></li>
+		<li><a href="#">Close<i class="material-icons left">close</i></a></li>
+	</ul>
+
+	<div id="modal-help" class="modal">
+		<div class="modal-content">
+		<h4>Help</h4>
+		<ul class="browser-default" style="padding-left: 1.5em">
+			<li>Hover over noes to see their address, click on them to explore the blockchain.</li>
+			<li>Use your mouse to pan and zoom around the graph.</li>
+			<li>Have fun!</li>
+		</ul>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+		</div>
+	</div>
+
+	<div id="modal-about" class="modal">
+		<div class="modal-content">
+		<h4>About</h4>
+		<p>Created by <a href="https://consto.uk">Matthew Consterdine</a>, Dennis Parkchov, and Altay Adademir for Computational Finance at the <a href="https://southampton.ac.uk">University of Southampton</a>.</p>
+		<p>Powered by <a href="https://blockchain.info">Blockchain.info and <a href="https://d3js.org">D3.js</a>.</p>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+		</div>
+	</div>
 </body>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
 	<script src="graph.js"></script>
 	<script src="blockchain.js"></script>
 	<script>
-		document.addEventListener('DOMContentLoaded', function() {M.FormSelect.init(document.querySelectorAll('select'))})
+		document.addEventListener('DOMContentLoaded', function() {
+			M.Dropdown.init(document.querySelectorAll('.dropdown-trigger', {'alignment': 'right', 'constrainWidth': false, 'coverTrigger': false}))
+			M.FormSelect.init(document.querySelectorAll('select'))
+			M.Modal.init(document.querySelectorAll('.modal'))
+		})
+
+		function saveSvg(svgEl, name) {
+			svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+			var svgData = svgEl.outerHTML;
+			var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+			var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+			var downloadLink = document.createElement("a");
+			downloadLink.href = URL.createObjectURL(svgBlob);
+			downloadLink.download = name;
+			downloadLink.setAttribute('readonly', '');
+			downloadLink.style.position = 'absolute';
+			downloadLink.style.left = '-9999px';
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+			document.body.removeChild(downloadLink);
+		}
+
+		function saveText(text, name) {
+			var file = new Blob([text], {type: 'text/plain;charset=utf-8'});
+			var downloadLink = document.createElement("a");
+			downloadLink.href = URL.createObjectURL(file);
+			downloadLink.download = name;
+			downloadLink.setAttribute('readonly', '');
+			downloadLink.style.position = 'absolute';
+			downloadLink.style.left = '-9999px';
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+			document.body.removeChild(downloadLink);
+		}
+
+		const copyToClipboard = function(text) {
+			const textarea = document.createElement('textarea');
+			textarea.value = text;
+			textarea.setAttribute('readonly', '');
+			textarea.style.position = 'absolute';
+			textarea.style.left = '-9999px';
+			document.body.appendChild(textarea);
+			textarea.select();
+			document.execCommand('copy');
+			document.body.removeChild(textarea);
+		};
 	</script>
 </html>

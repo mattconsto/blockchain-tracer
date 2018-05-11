@@ -138,7 +138,7 @@ function updateGraph() {
 		.on('click', selectNode)
 		.on("mouseover", function(d) {
 			tooltip.transition().duration(200).style("opacity", .9)
-			tooltip.html(d.id).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
+			tooltip.html(d.label).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
 			d3.selectAll(".connects_" + d.id).attr('stroke', 'rgba(127, 127, 127, 1)')
 		})
 		.on("mouseout", function(d) {

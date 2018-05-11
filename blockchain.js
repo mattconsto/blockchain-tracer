@@ -92,7 +92,7 @@ var updateBlockchain = function(address, result, offset) {
 				var addr = inputs["prev_out"]["addr"]
 				if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
 					existingNodeHashes.add(addr)
-					nodes.push({id: addr, group: 0, label: addr, level: addr == address ? 1 : 0})
+					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
 				}
 			}
 
@@ -100,7 +100,8 @@ var updateBlockchain = function(address, result, offset) {
 				var addr = out["addr"]
 				if(typeof addr != "undefined" && !existingNodeHashes.has(addr)) {
 					existingNodeHashes.add(addr)
-					nodes.push({id: addr, group: 0, label: addr, level: addr == address ? 1 : 0})
+					if(addr in addressTags) {}
+					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
 				}
 			}
 

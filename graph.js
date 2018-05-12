@@ -10,7 +10,7 @@ svg.attr('width', width).attr('height', height)
 svg.append('defs').append('marker')
 	.attr('id', 'arrowhead')
 	.attr('viewBox', '-0 -5 10 10')
-	.attr('refX', 10)
+	.attr('refX', 5)
 	.attr('refY', 0)
 	.attr('orient', 'auto')
 	.attr('markerWidth', 10)
@@ -31,14 +31,18 @@ var nodeGroup = svg.append('g').attr('class', 'nodes')
 var linkForce = d3
 	.forceLink()
 	.id(function(link) {return link.id})
-	.strength(function(link) {return link.strength})
 
+var collide = d3.forceCollide().radius(function(node) {
+		var balance = (discoveredAddresses.has(node.id) ? discoveredAddresses.get(node.id)["final_balance"] : estimatedAddreses.get(node.id)) / 100000000.0
+		return 2*(Math.log(Math.max(1, balance)) * 10 + 10)
+	})
 var simulation = d3
 	.forceSimulation()
+	.force("collide", collide)
 	.force('link', linkForce)
-	.force('charge', d3.forceManyBody().strength(-100))
+	.force('charge', d3.forceManyBody().strength(-100).distanceMax(200))
 	.force('center', d3.forceCenter(width / 2, height / 2))
-	.velocityDecay(0.92)
+	.velocityDecay(0.98)
 
 var dragDrop = d3.drag().on('start', function(node) {
 	node.fx = node.x

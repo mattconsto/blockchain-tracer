@@ -10,23 +10,22 @@ svg.attr('width', width).attr('height', height)
 svg.append('defs').append('marker')
 	.attr('id', 'arrowhead')
 	.attr('viewBox', '-0 -5 10 10')
-	.attr('refX', 13)
+	.attr('refX', 10)
 	.attr('refY', 0)
 	.attr('orient', 'auto')
-	.attr('markerWidth', 1)
+	.attr('markerWidth', 10)
 	.attr('markerHeight', 10)
 	.attr('xoverflow', 'visible')
 	.append('svg:path')
 	.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
 	.attr('fill', 'rgb(127, 127, 127)')
-	.style('stroke','none');
+	.style('stroke','none')
 
-var linkElements, nodeElements, textElements
+var linkElements, nodeElements
 
 // we use svg groups to logically group the elements together
 var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
-var textGroup = svg.append('g').attr('class', 'texts')
 
 // simulation setup with all forces
 var linkForce = d3
@@ -91,18 +90,11 @@ function zoomFit(paddingPercent, transitionDuration) {
 // Define the div for the tooltip
 var tooltip = d3.select("#tooltip").style("opacity", 0);
 
-function step(timestamp) {
-	zoomFit(0.9)
-	window.requestAnimationFrame(step);
-}
-// window.requestAnimationFrame(step);
-
 svg.call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", zoomed));
 
 function zoomed() {
 	nodeGroup.attr("transform", d3.event.transform);
 	linkGroup.attr("transform", d3.event.transform);
-	textGroup.attr("transform", d3.event.transform);
 }
 
 // select node is called on every click
@@ -110,7 +102,7 @@ function zoomed() {
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
 	d3.select(this).attr('fill', 'rgba(127, 127, 127, 0.5)')
-	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, 0)}, function(status) {
+	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, 0, selectedNode.distance)}, function(status) {
 		console.log("Error", status)
 	})
 }
@@ -148,7 +140,7 @@ function updateGraph() {
 		})
 		.attr('id', function(node) {return 'node_' + node.id})
 		.attr('fill', function(node) {
-			return node.level === 1 ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 195, 255, 0.85)'}
+			return 'hsla(' + node.distance*15 + ', 90%, 50%, 0.85'}
 		)
 		.style('cursor', 'pointer')
 		.call(dragDrop)
@@ -176,22 +168,6 @@ function updateGraph() {
 		})
 
 	nodeElements = nodeEnter.merge(nodeElements)
-
-	// texts
-	textElements = textGroup.selectAll('text').data(nodes, function(node) {return node.id})
-	textElements.exit().remove()
-
-	var textEnter = textElements
-		.enter()
-		.append('text')
-		.attr('fill', 'rgab(127, 127, 127, 1)')
-		.attr('id', function(node) {return 'text_' + node.label})
-		.text(function(node) {return node.label})
-		.attr('font-size', 15)
-		.attr('dx', 15)
-		.attr('dy', 4)
-
-	textElements = textEnter.merge(textElements)
 }
 
 function updateSimulation() {
@@ -201,9 +177,6 @@ function updateSimulation() {
 		nodeElements
 			.attr('cx', function(node) {return node.x})
 			.attr('cy', function(node) {return node.y})
-		textElements
-			.attr('x', function(node) {return node.x})
-			.attr('y', function(node) {return node.y})
 		linkElements
 			.attr('x1', function(link) {return link.source.x})
 			.attr('y1', function(link) {return link.source.y})

@@ -81,9 +81,16 @@ var discoveredAddresses = new Map()
 var discoveredLinks = new Set()
 var linkedAddresses = new Map()
 
-var updateBlockchain = function(address, result, offset) {
+var updateBlockchain = function(address, result, offset, distance) {
 	console.log(address, offset)
 	window.location.hash = "!" + address
+	document.getElementById('hash').value = address
+
+	// Colour the very first one differently
+	if(!estimatedAddreses.has(address)) {
+		nodes.push({id: address, group: 0, label: (address in addressTags ? addressTags[address].n : address), distance: distance})
+		estimatedAddreses.set(address, 0)
+	}
 
 	dollarsToBitcoin = result["info"]["symbol_local"]["conversion"]
 
@@ -99,7 +106,7 @@ var updateBlockchain = function(address, result, offset) {
 				if(typeof addr == "undefined" || typeof inputs == "undefined") continue
 
 				if(!estimatedAddreses.has(addr)) {
-					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
+					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), distance: distance+1})
 					estimatedAddreses.set(addr, 0)
 				} else {
 					estimatedAddreses.set(addr, Math.max(0, estimatedAddreses.get(addr) - inputs["prev_out"]["value"]))
@@ -111,7 +118,7 @@ var updateBlockchain = function(address, result, offset) {
 				if(typeof addr == "undefined" || typeof out == "undefined") continue
 				if(!estimatedAddreses.has(addr)) {
 					estimatedAddreses.set(addr, out["value"])
-					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), level: addr == address ? 1 : 0})
+					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), distance: distance+1})
 				} else {
 					estimatedAddreses.set(addr, estimatedAddreses.get(addr) + out["value"])
 				}
@@ -142,7 +149,7 @@ var updateBlockchain = function(address, result, offset) {
 
 	if(result["txs"].length == 100) {
 		// Recurse
-		lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100)}, function(status) {
+		lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100, distance)}, function(status) {
 			console.log("Error", status)
 		})
 	}
@@ -154,8 +161,10 @@ var trace = function(hash) {
 	nodes = []
 	links = []
 
-	discoveredAddresses = new Set()
+	estimatedAddreses = new Map()
+	discoveredAddresses = new Map()
 	discoveredLinks = new Set()
+	linkedAddresses = new Map()
 
 	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 0)}, function(status) {
 		console.log("Error", status)

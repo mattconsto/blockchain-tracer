@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Automatically navigate on load.
 	var addresshash = document.getElementById('hash')
 	if(window.location.hash.startsWith("#!")) addresshash.value = window.location.hash.substr(2)
-	lookup(addresshash.value, 0, function(result) {updateBlockchain(addresshash.value, result, 0)}, function(status) {
+	lookup(addresshash.value, 0, function(result) {updateBlockchain(addresshash.value, result, 0, 0)}, function(status) {
 		console.log("Error", status)
 	})
 })

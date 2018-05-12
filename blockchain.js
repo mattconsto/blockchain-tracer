@@ -149,9 +149,11 @@ var updateBlockchain = function(address, result, offset, distance) {
 
 	if(result["txs"].length == 100) {
 		// Recurse
-		lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100, distance)}, function(status) {
-			console.log("Error", status)
-		})
+		if(offset == 0 || offset % 300 != 0 || (offset % 300 == 0 && confirm("Do you wish to continue loading addresses? This may cause significant slowdown!"))) {
+			lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100, distance)}, function(status) {
+				console.log("Error", status)
+			})
+		}
 	}
 }
 

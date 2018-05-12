@@ -102,8 +102,10 @@ function zoomed() {
 // or reset the data if the same node is clicked twice
 function selectNode(selectedNode) {
 	d3.select(this).attr('fill', 'rgba(127, 127, 127, 0.5)')
+	M.toast({html: 'Loading ' + selectedNode.id, displayLength: 2000})
 	lookup(selectedNode.id, 0, function(result) {updateBlockchain(selectedNode.id, result, 0, selectedNode.distance)}, function(status) {
-		console.log("Error", status)
+		M.toast({html: "Error:" + status, displayLength: Infinity})
+		console.error("Error", status)
 	})
 }
 

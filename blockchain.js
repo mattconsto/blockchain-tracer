@@ -151,7 +151,8 @@ var updateBlockchain = function(address, result, offset, distance) {
 		// Recurse
 		if(offset == 0 || offset % 300 != 0 || (offset % 300 == 0 && confirm("Do you wish to continue loading addresses? This may cause significant slowdown!"))) {
 			lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100, distance)}, function(status) {
-				console.log("Error", status)
+				console.error("Error", status)
+				M.toast({html: "Error:" + status, displayLength: Infinity})
 			})
 		}
 	}
@@ -160,6 +161,8 @@ var updateBlockchain = function(address, result, offset, distance) {
 testLocalStorage()
 
 var trace = function(hash) {
+	M.toast({html: 'Loading ' + hash, displayLength: 2000})
+
 	nodes = []
 	links = []
 
@@ -168,8 +171,9 @@ var trace = function(hash) {
 	discoveredLinks = new Set()
 	linkedAddresses = new Map()
 
-	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 0)}, function(status) {
-		console.log("Error", status)
+	lookup(hash, 0, function(result) {updateBlockchain(hash, result, 0, 0)}, function(status) {
+		console.error("Error", status)
+		M.toast({html: "Error:" + status, displayLength: Infinity})
 	})
 	return false
 }

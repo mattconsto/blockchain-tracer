@@ -28,21 +28,18 @@ var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
 
 // simulation setup with all forces
-var linkForce = d3
-	.forceLink()
-	.id(function(link) {return link.id})
-
 var collide = d3.forceCollide().radius(function(node) {
 		var balance = (discoveredAddresses.has(node.id) ? discoveredAddresses.get(node.id)["final_balance"] : estimatedAddreses.get(node.id)) / 100000000.0
 		return 2*(Math.log(Math.max(1, balance)) * 10 + 10)
-	})
+})
+
 var simulation = d3
 	.forceSimulation()
 	.force("collide", collide)
-	.force('link', linkForce)
+	.force('link', d3.forceLink().id(function(link) {return link.id}))
 	.force('charge', d3.forceManyBody().strength(-100).distanceMax(200))
 	.force('center', d3.forceCenter(width / 2, height / 2))
-	.velocityDecay(0.98)
+	.velocityDecay(0.95)
 
 var dragDrop = d3.drag().on('start', function(node) {
 	node.fx = node.x
@@ -53,6 +50,7 @@ var dragDrop = d3.drag().on('start', function(node) {
 	node.fy = d3.event.y
 }).on('end', function(node) {
 	if(!d3.event.active) simulation.alphaTarget(0)
+	simulation.velocityDecay(0.95)
 	node.fx = null
 	node.fy = null
 })
@@ -63,39 +61,12 @@ function resize() {
 	svg.size([width, height]);
 	simulation.force('center', d3.forceCenter(width / 2, height / 2))
 	simulation.restart()
-	// lapsedZoomFit(5, 0);
-}
-
-// var zoom = d3.zoom().on('zoom.zoom', function () {svg.attr("transform", d3.event.transform)})
-
-function zoomFit(paddingPercent, transitionDuration) {
-	var bounds = svg.node().getBBox();
-	var parent = svg.node().parentElement;
-	var fullWidth = parent.clientWidth,
-		fullHeight = parent.clientHeight;
-	var width = bounds.width,
-		height = bounds.height;
-	var midX = bounds.x + width / 2,
-		midY = bounds.y + height / 2;
-	if (width == 0 || height == 0) return; // nothing to fit
-	var scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
-	var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
-
-	svg.transition()
-		.duration(transitionDuration || 0) // milliseconds
-		.call(zoom.transform,
-			d3.zoomIdentity
-			// .translate(translate[0], translate[1])
-			.translate(0, 0)
-			.scale(scale)
-		)
 }
 
 // Define the div for the tooltip
 var tooltip = d3.select("#tooltip").style("opacity", 0);
 
 svg.call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", zoomed));
-
 function zoomed() {
 	nodeGroup.attr("transform", d3.event.transform);
 	linkGroup.attr("transform", d3.event.transform);
@@ -114,7 +85,6 @@ function selectNode(selectedNode) {
 }
 
 var fillStyle = 0;
-
 var updateFillStyle = function(choosen) {
 	fillStyle = choosen
 	nodeElements.remove()

@@ -49,7 +49,7 @@
 				<div class="input-field col s2">
 					<select onchange="updateFillStyle(parseInt(this.value))">
 						<option value="0">Distance</option>
-						<option value="1">Monochrome</option>
+						<option value="1">Mono</option>
 						<option value="2">Poison</option>
 						<option value="3" disabled>Haircut</option>
 						<option value="4" disabled>FIFO</option>
@@ -59,12 +59,12 @@
 				</div>
 
 				<div class="input-field col s3">
-					<input type="text" class="datepicker" value="2009/01/01" disabled>
+					<input type="text" class="datepicker" value="2000/01/01" onchange="dateMin = new Date(this.value).getTime()/1000">
 					<label style="position: absolute; top: -0.6em">From</label>
 				</div>
 
 				<div class="input-field col s3">
-					<input type="text" class="datepicker" value="2099/01/01" disabled>
+					<input type="text" class="datepicker" value="3000/01/01" onchange="dateMax = new Date(this.value).getTime()/1000">
 					<label style="position: absolute; top: -0.6em">To</label>
 				</div>
 

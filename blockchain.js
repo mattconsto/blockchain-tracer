@@ -81,6 +81,9 @@ var discoveredAddresses = new Map()
 var discoveredLinks = new Set()
 var linkedAddresses = new Map()
 
+var dateMin = new Date("2000").getTime()/1000
+var dateMax = new Date("3000").getTime()/1000
+
 var updateBlockchain = function(address, result, offset, distance) {
 	console.log(address, offset)
 	window.location.hash = "!" + address
@@ -100,6 +103,8 @@ var updateBlockchain = function(address, result, offset, distance) {
 
 	if(result["txs"].length > 0) {
 		for(var transaction of result["txs"]) {
+			if(transaction["time"] < dateMin || transaction["time"] > dateMax) continue
+
 			// Compute links first, so we know which is the source and which is the target
 			for(var inputs of transaction["inputs"]) {
 				for(var out of transaction["out"]) {

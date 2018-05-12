@@ -100,30 +100,7 @@ var updateBlockchain = function(address, result, offset, distance) {
 
 	if(result["txs"].length > 0) {
 		for(var transaction of result["txs"]) {
-			// console.log(transaction)
-			for(var inputs of transaction["inputs"]) {
-				var addr = inputs["prev_out"]["addr"]
-				if(typeof addr == "undefined" || typeof inputs == "undefined") continue
-
-				if(!estimatedAddreses.has(addr)) {
-					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), distance: distance+1})
-					estimatedAddreses.set(addr, 0)
-				} else {
-					estimatedAddreses.set(addr, Math.max(0, estimatedAddreses.get(addr) - inputs["prev_out"]["value"]))
-				}
-			}
-
-			for(var out of transaction["out"]) {
-				var addr = out["addr"]
-				if(typeof addr == "undefined" || typeof out == "undefined") continue
-				if(!estimatedAddreses.has(addr)) {
-					estimatedAddreses.set(addr, out["value"])
-					nodes.push({id: addr, group: 0, label: (addr in addressTags ? addressTags[addr].n : addr), distance: distance+1})
-				} else {
-					estimatedAddreses.set(addr, estimatedAddreses.get(addr) + out["value"])
-				}
-			}
-
+			// Compute links first, so we know which is the source and which is the target
 			for(var inputs of transaction["inputs"]) {
 				for(var out of transaction["out"]) {
 					var source = inputs["prev_out"]["addr"]
@@ -140,6 +117,31 @@ var updateBlockchain = function(address, result, offset, distance) {
 					if(!linkedAddresses.has(target)) linkedAddresses.set(target, {"in": new Map(), "out": new Map()})
 					linkedAddresses.get(source)["out"].set(transaction['hash'], transaction)
 					linkedAddresses.get(target)["in"].set(transaction['hash'], transaction)
+				}
+			}
+
+			for(var inputs of transaction["inputs"]) {
+				var addr = inputs["prev_out"]["addr"]
+				if(typeof addr == "undefined" || typeof inputs == "undefined") continue
+
+				if(!estimatedAddreses.has(addr)) {
+					var actualDistance = distance + (discoveredLinks.has(address+addr) ? (discoveredLinks.has(addr+address) ? 0 : 1) : (discoveredLinks.has(addr+address) ? - 1 : 0))
+					nodes.push({id: addr, group: 1, label: (addr in addressTags ? addressTags[addr].n : addr), distance: actualDistance})
+					estimatedAddreses.set(addr, 0)
+				} else {
+					estimatedAddreses.set(addr, Math.max(0, estimatedAddreses.get(addr) - inputs["prev_out"]["value"]))
+				}
+			}
+
+			for(var out of transaction["out"]) {
+				var addr = out["addr"]
+				if(typeof addr == "undefined" || typeof out == "undefined") continue
+				if(!estimatedAddreses.has(addr)) {
+					estimatedAddreses.set(addr, out["value"])
+					var actualDistance = distance + (discoveredLinks.has(address+addr) ? (discoveredLinks.has(addr+address) ? 0 : 1) : (discoveredLinks.has(addr+address) ? - 1 : 0))
+					nodes.push({id: addr, group: 1, label: (addr in addressTags ? addressTags[addr].n : addr), distance: actualDistance})
+				} else {
+					estimatedAddreses.set(addr, estimatedAddreses.get(addr) + out["value"])
 				}
 			}
 		}

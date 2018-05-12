@@ -154,6 +154,7 @@ function updateGraph() {
 				default:
 				case 0: return 'hsla(' + node.distance*15 + ', 90%, 50%, 0.85';
 				case 1: return 'rgba(127, 127, 255, 0.85)';
+				case 2: return node.group == 0 ? 'rgba(127, 127, 255, 0.85)' : (node.distance < 0 ? 'rgba(127, 127, 127, 0.85)' : 'rgba(255, 64, 64, 0.85)');
 			}
 		})
 		.style('cursor', 'pointer')

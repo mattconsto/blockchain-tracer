@@ -109,6 +109,14 @@ function selectNode(selectedNode) {
 	})
 }
 
+var fillStyle = 0;
+
+var updateFillStyle = function(choosen) {
+	fillStyle = choosen
+	nodeElements.remove()
+	updateSimulation()
+}
+
 function updateGraph() {
 	// links
 	linkElements = linkGroup.selectAll('line')
@@ -142,8 +150,12 @@ function updateGraph() {
 		})
 		.attr('id', function(node) {return 'node_' + node.id})
 		.attr('fill', function(node) {
-			return 'hsla(' + node.distance*15 + ', 90%, 50%, 0.85'}
-		)
+			switch(fillStyle) {
+				default:
+				case 0: return 'hsla(' + node.distance*15 + ', 90%, 50%, 0.85';
+				case 1: return 'rgba(127, 127, 255, 0.85)';
+			}
+		})
 		.style('cursor', 'pointer')
 		.call(dragDrop)
 		// we link the selectNode method here
@@ -155,7 +167,7 @@ function updateGraph() {
 			var balance = (discoveredAddresses.has(d.id) ? discoveredAddresses.get(d.id)["final_balance"] : estimatedAddreses.has(d.id) ? estimatedAddreses.get(d.id) : 0) / 100000000.0
 			
 			tooltip.select('#tooltip-title').html(d.label)
-			tooltip.select('#tooltip-value').html(balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
+			tooltip.select('#tooltip-value').html((!discoveredAddresses.has(d.id) ? "Estimated: " : "") + balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
 
 			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].size + linkedAddresses.get(d.id)["in"].size)
 			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].size)

@@ -47,14 +47,15 @@
 		<div class="card minimal col s5">
 			<div class="card-action row">
 				<div class="input-field col s2">
-					<select disabled>
+					<select onchange="updateFillStyle(parseInt(this.value))">
 						<option value="0">Distance</option>
-						<option value="1">Poison</option>
-						<option value="2">Haircut</option>
-						<option value="3">FIFO</option>
-						<option value="3">FILO</option>
+						<option value="1">Monochrome</option>
+						<option value="2" disabled>Poison</option>
+						<option value="3" disabled>Haircut</option>
+						<option value="4" disabled>FIFO</option>
+						<option value="5" disabled>FILO</option>
 					</select>
-					<label style="position: absolute; top: -3em; font-size: 0.8em">Tracing</label>
+					<label style="position: absolute; top: -3em; font-size: 0.8em">Colouring</label>
 				</div>
 
 				<div class="input-field col s3">

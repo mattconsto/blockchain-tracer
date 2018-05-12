@@ -157,9 +157,34 @@ function updateGraph() {
 			tooltip.select('#tooltip-title').html(d.label)
 			tooltip.select('#tooltip-value').html(balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
 
-			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].length + linkedAddresses.get(d.id)["in"].length)
-			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].length)
-			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].length)
+			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].size + linkedAddresses.get(d.id)["in"].size)
+			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].size)
+			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].size)
+			
+			var out_tx = []
+			linkedAddresses.get(d.id)["out"].forEach(function(value, key, map ){
+				for (var y of value['out'] ){
+					out_tx.push(y['value'] + ' ' +  y['addr'])
+				}
+			})
+			
+			var in_tx = []
+			linkedAddresses.get(d.id)["in"].forEach(function(value, key, map) {
+				for (var y of value['out'] ){
+					var address = y['addr']
+					if (address === d.label){
+						var input_addresses = []
+						for (var input of value['inputs']){
+							input_addresses.push(input['prev_out']['addr'])
+						}
+						in_tx.push(y['value'] + ' ' + input_addresses)
+					}
+				}
+				
+			})
+			
+			tooltip.select('#tooltip-in').html(in_tx)
+			tooltip.select('#tooltip-out').html(out_tx)
 
 			tooltip.style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
 			d3.selectAll(".connects_" + d.id).attr('opacity', '1')

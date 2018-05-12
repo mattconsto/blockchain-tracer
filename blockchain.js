@@ -136,10 +136,10 @@ var updateBlockchain = function(address, result, offset, distance) {
 						links.push({source: source, target: target, strength: 0.7})
 					}
 
-					if(!linkedAddresses.has(source)) linkedAddresses.set(source, {"in": [], "out": []})
-					if(!linkedAddresses.has(target)) linkedAddresses.set(target, {"in": [], "out": []})
-					linkedAddresses.get(source)["out"].push(transaction)
-					linkedAddresses.get(target)["in"].push(transaction)
+					if(!linkedAddresses.has(source)) linkedAddresses.set(source, {"in": new Map(), "out": new Map()})
+					if(!linkedAddresses.has(target)) linkedAddresses.set(target, {"in": new Map(), "out": new Map()})
+					linkedAddresses.get(source)["out"].set(transaction['hash'], transaction)
+					linkedAddresses.get(target)["in"].set(transaction['hash'], transaction)
 				}
 			}
 		}

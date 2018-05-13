@@ -183,7 +183,7 @@ function updateGraph() {
 					var address = y['addr'];
 					if (address === d.label) {
 						var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
-						in_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\" onclick=\"traceTransactionIn('"+d.id+"', '"+value["hash"] + "'," + i + ")\" disabled title=\"Trace\">" +
+						in_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\" onclick=\"traceTransactionIn('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
 							"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address + ")</button><br />";
 					}
 				}

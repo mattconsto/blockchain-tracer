@@ -267,8 +267,6 @@ var traceTransactionOut = function(address, hash, index) {
 		var total = balance
 		var fifobalance = item["fifo"]
 
-		console.log("start addr", item["data"]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
-
 		if(linkedAddresses.has(item["data"]["addr"])) {
 			var transactions = Array.from(linkedAddresses.get(item["data"]["addr"])["out"].values())
 			transactions.sort(function(a, b) {return a["time"] - b["time"]})
@@ -284,7 +282,6 @@ var traceTransactionOut = function(address, hash, index) {
 				for(var i = 0; i < transaction["out"].length; i++) {
 					var fifoout = Math.min(fifobalance, transaction["out"][i]["value"])
 					fifobalance -= fifoout
-					console.log("> addr", transaction["out"][i]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
 
 					queue.push({
 						"data": transaction["out"][i],
@@ -310,8 +307,63 @@ var traceTransactionOut = function(address, hash, index) {
 }
 
 var traceTransactionIn = function(address, hash, index) {
+	// Fill the queue
+	var item = linkedAddresses.get(address)["all"].get(hash)
+	var firstelement = {"data": item["inputs"][index]["prev_out"], "time": item["time"], "haircut": 1.0, "fifo": item["inputs"][index]["prev_out"]["value"]}
+	var queue = new PriorityQueue()
+	var seen = new Set()
+	queue.push(firstelement)
+	seen.add(hash)
+
+	// Reset variables
 	taintedAddresses = new Map()
 	taintOrigin = address
+	taintValue = item["inputs"][index]["prev_out"]["value"]
 
-	console.log(address, hash, index)
+	// Go!
+	while(queue.size() > 0) {
+		var item = queue.pop()
+		console.log(item)
+
+		var balance = (discoveredAddresses.has(item["data"]["addr"]) ? discoveredAddresses.get(item["data"]["addr"])["final_balance"] : estimatedAddreses.get(item["data"]["addr"]))
+		var total = balance
+		var fifobalance = item["fifo"]
+
+		if(linkedAddresses.has(item["data"]["addr"])) {
+			var transactions = Array.from(linkedAddresses.get(item["data"]["addr"])["in"].values())
+			transactions.sort(function(a, b) {return a["time"] - b["time"]})
+
+			for(var transaction of transactions) {
+				if(seen.has(transaction["hash"])) continue
+				seen.add(transaction["hash"])
+			
+				if(transaction["time"] >= item["time"]) continue
+
+				for(var inpu of transaction["inputs"]) total += inpu["prev_out"]["value"]
+
+				for(var i = 0; i < transaction["inputs"].length; i++) {
+					var fifoout = Math.min(fifobalance, transaction["inputs"][i]["prev_out"]["value"])
+					fifobalance -= fifoout
+
+					queue.push({
+						"data": transaction["inputs"][i]["prev_out"],
+						"time": transaction["time"],
+						"haircut": item["haircut"] * transaction["inputs"][i]["prev_out"]["value"] / total,
+						"fifo": fifoout
+					})
+				}
+			}
+		}
+
+		if(!taintedAddresses.has(item["data"]["addr"])) {
+			taintedAddresses.set(item["data"]["addr"], {"poison": true, "haircut": item["haircut"] * balance / total, "fifo": fifobalance})
+		} else {
+			var oldvalues = taintedAddresses.get(item["data"]["addr"])
+			taintedAddresses.set(item["data"]["addr"], {"poison": true, "haircut": oldvalues["haircut"] + item["haircut"] * balance / total, "fifo": oldvalues["fifo"] + fifobalance})
+		}
+	}
+
+	// Update colouring, and switch to poison if on distance
+	if(fillStyle < 2) fillStyle = 2
+	updateFillStyle(fillStyle)
 }

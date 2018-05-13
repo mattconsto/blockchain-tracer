@@ -1,3 +1,58 @@
+class PriorityQueue {
+	constructor(comparator = (a, b) => a > b) {
+		this._heap = [];
+		this._comparator = comparator;
+	}
+	size() {return this._heap.length;}
+	isEmpty() {return this.size() == 0;}
+	peek() {return this._heap[0];}
+	push(...values) {
+		values.forEach(value => {
+			this._heap.push(value);
+			this._siftUp();
+		});
+		return this.size();
+	}
+	pop() {
+		const poppedValue = this.peek();
+		const bottom = this.size() - 1;
+		if (bottom > 0) this._swap(0, bottom);
+
+		this._heap.pop();
+		this._siftDown();
+		return poppedValue;
+	}
+	_parent(i) {return ((i + 1) >>> 1) - 1}
+	_left(i) {return (i << 1) + 1}
+	_right(i) {return (i + 1) << 1}
+	replace(value) {
+		const replacedValue = this.peek();
+		this._heap[0] = value;
+		this._siftDown();
+		return replacedValue;
+	}
+	_greater(i, j) {return this._comparator(this._heap[i], this._heap[j]);}
+	_swap(i, j) {[this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];}
+	_siftUp() {
+		let node = this.size() - 1;
+		while (node > 0 && this._greater(node, this._parent(node))) {
+			this._swap(node, this._parent(node));
+			node = this._parent(node);
+		}
+	}
+	_siftDown() {
+		let node = 0;
+		while (
+			(this._left(node) < this.size() && this._greater(this._left(node), node)) ||
+			(this._right(node) < this.size() && this._greater(this._right(node), node))
+		) {
+			let maxChild = (this._right(node) < this.size() && this._greater(this._right(node), this._left(node))) ? this._right(node) : this._left(node);
+			this._swap(node, maxChild);
+			node = maxChild;
+		}
+	}
+}
+
 var getJSONAsync = function(url, callback, error) {
 	var request = new XMLHttpRequest()
 	request.onreadystatechange = function() {
@@ -193,7 +248,11 @@ var trace = function(hash) {
 var traceTransactionOut = function(address, hash, index) {
 	// Fill the queue
 	var item = linkedAddresses.get(address)["all"].get(hash)
-	var queue = [{"data": item["out"][index], "time": item["time"], "haircut": 1.0, "fifo": item["out"][index]["value"], "filo": item["out"][index]["value"]}]
+	var firstelement = {"data": item["out"][index], "time": item["time"], "haircut": 1.0, "fifo": item["out"][index]["value"]}
+	var queue = new PriorityQueue()
+	var seen = new Set()
+	queue.push(firstelement)
+	seen.add(hash)
 
 	// Reset variables
 	taintedAddresses = new Map()
@@ -201,13 +260,12 @@ var traceTransactionOut = function(address, hash, index) {
 	taintValue = item["out"][index]["value"]
 
 	// Go!
-	while(queue.length > 0) {
-		var item = queue.pop(0)
+	while(queue.size() > 0) {
+		var item = queue.pop()
 
 		var balance = (discoveredAddresses.has(item["data"]["addr"]) ? discoveredAddresses.get(item["data"]["addr"])["final_balance"] : estimatedAddreses.get(item["data"]["addr"]))
 		var total = balance
 		var fifobalance = item["fifo"]
-		var filobalance = item["filo"] - Math.min(item["filo"], balance)
 
 		console.log("start addr", item["data"]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
 
@@ -216,32 +274,33 @@ var traceTransactionOut = function(address, hash, index) {
 			transactions.sort(function(a, b) {return a["time"] - b["time"]})
 
 			for(var transaction of transactions) {
-				if(transaction["time"] >= item["time"]) {
-					for(var out of transaction["out"]) total += out["value"]
+				if(seen.has(transaction["hash"])) continue
+				seen.add(transaction["hash"])
+			
+				if(transaction["time"] >= item["time"]) continue
 
-					for(var i = 0; i < transaction["out"].length; i++) {
-						var fifoout = Math.min(fifobalance, transaction["out"][i]["value"])
-						fifobalance -= fifoout
-						console.log("> addr", transaction["out"][i]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
-						var filoout = Math.min(filobalance, transaction["out"][transaction["out"].length-i-1]["value"])
-						filobalance -= filoout
+				for(var out of transaction["out"]) total += out["value"]
 
-						queue.push({
-							"data": transaction["out"][i],
-							"time": transaction["time"],
-							"haircut": item["haircut"] * transaction["out"][i]["value"] / total,
-							"fifo": fifoout,
-							"filo": filoout,
-						})
-					}
+				for(var i = 0; i < transaction["out"].length; i++) {
+					var fifoout = Math.min(fifobalance, transaction["out"][i]["value"])
+					fifobalance -= fifoout
+					console.log("> addr", transaction["out"][i]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
+
+					queue.push({
+						"data": transaction["out"][i],
+						"time": transaction["time"],
+						"haircut": item["haircut"] * transaction["out"][i]["value"] / total,
+						"fifo": fifoout
+					})
 				}
 			}
 		}
 
 		if(!taintedAddresses.has(item["data"]["addr"])) {
-			taintedAddresses.set(item["data"]["addr"], {"poison": true, "haircut": item["haircut"] * balance / total, "fifo": fifobalance, "filo": Math.min(item["filo"], balance)})
+			taintedAddresses.set(item["data"]["addr"], {"poison": true, "haircut": item["haircut"] * balance / total, "fifo": fifobalance})
 		} else {
-			//idk
+			var oldvalues = taintedAddresses.get(item["data"]["addr"])
+			taintedAddresses.set(item["data"]["addr"], {"poison": true, "haircut": oldvalues["haircut"] + item["haircut"] * balance / total, "fifo": oldvalues["fifo"] + fifobalance})
 		}
 	}
 

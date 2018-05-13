@@ -146,7 +146,6 @@ function updateGraph() {
 				case 2: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["poison"] ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 127, 127, 0.85)');
 				case 3: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["haircut"] > 0 ? 'rgba(' + Math.floor(taintedAddresses.get(node.id)["haircut"] * 255) + ', 0, 0, 0.85)' : 'rgba(127, 196, 127, 0.85)');
 				case 4: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["fifo"] > 0 ? 'rgba(' + Math.floor(taintedAddresses.get(node.id)["fifo"]/taintValue * 255) + ', 0, 0, 0.85)' : 'rgba(127, 196, 127, 0.85)');
-				case 5: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["filo"] > 0 ? 'rgba(' + Math.floor(taintedAddresses.get(node.id)["filo"]/taintValue * 255) + ', 0, 0, 0.85)' : 'rgba(127, 196, 127, 0.85)');
 			}
 		})
 		.style('cursor', 'pointer')

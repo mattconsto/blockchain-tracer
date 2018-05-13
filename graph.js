@@ -64,7 +64,7 @@ var dragDrop = d3.drag().on('start', function(node) {
 	node.fy = d3.event.y
 }).on('end', function(node) {
 	if(!d3.event.active) simulation.alphaTarget(0)
-	simulation.velocityDecay(0.95)
+	//simulation.velocityDecay(0.95)
 	node.fx = null
 	node.fy = null
 })
@@ -155,15 +155,15 @@ function updateGraph() {
 		.on('click', selectNode)
 		.on("mouseover", function(d) {
 			var balance = (discoveredAddresses.has(d.id) ? discoveredAddresses.get(d.id)["final_balance"] : estimatedAddreses.has(d.id) ? estimatedAddreses.get(d.id) : 0) / 100000000.0
-			
+
 			tooltip.select('#tooltip-title').html(d.label)
-			tooltip.select('#tooltip-value').html((!discoveredAddresses.has(d.id) ? "Estimated: " : "") + balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
+			tooltip.select('#tooltip-value').html((!discoveredAddresses.has(d.id) ? "Estimated: " : "") + "<b>" + balance.toLocaleString() + " BTC </b> (" + (balance * dollarsToBitcoin).formatMoney(2, '.', ',') + " USD)")
 
 			if(taintedAddresses.has(d.id)) {
 				var taintedness = taintedAddresses.get(d.id)
-				tooltip.select('#tooltip-value').html(tooltip.select('#tooltip-value').html() + 
-					(taintedness["poison"] ? "<br />Poisoned" : "") + 
-					(taintedness["haircut"] > 0 ? "<br />Haircut: " + (taintedness["haircut"]*100).toFixed(3) + "%" : "") + 
+				tooltip.select('#tooltip-value').html(tooltip.select('#tooltip-value').html() +
+					(taintedness["poison"] ? "<br />Poisoned" : "") +
+					(taintedness["haircut"] > 0 ? "<br />Haircut: " + (taintedness["haircut"]*100).toFixed(3) + "%" : "") +
 					(taintedness["fifo"] > 0 ? "<br />LIFO: " + (taintedness["fifo"] / 100000000.0).toLocaleString() + " BTC" : "")
 				)
 			}
@@ -171,7 +171,7 @@ function updateGraph() {
 			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].size + linkedAddresses.get(d.id)["in"].size)
 			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].size)
 			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].size)
-			
+
 			var tx_log = "";
 
 			linkedAddresses.get(d.id)["all"].forEach(function (value, key, map) {
@@ -181,7 +181,7 @@ function updateGraph() {
 
 						var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
 						tx_log += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light red\" onclick=\"traceTransactionOut('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
-							"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + ("addr" in y ? y['addr'] : "???") + ")</button><br />";
+							"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + ("addr" in y ? y['addr'].trunc(10) : "???") + ")</button><br />";
 					}
 				} else {
 					for(var i = 0; i < value['out'].length; i++) {
@@ -191,7 +191,7 @@ function updateGraph() {
 						if (address === d.label) {
 							var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
 							tx_log += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\" onclick=\"traceTransactionIn('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
-								"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address + ")</button><br />";
+								"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(10) + " (" + address.trunc(10) + ")</button><br />";
 						}
 					}
 				}
@@ -221,6 +221,23 @@ document.getElementById('tooltip').addEventListener("mouseenter", function() {
 document.getElementById('tooltip').addEventListener("mouseleave", function() {
 	tooltipActive = false
 })
+
+function KeyPress(e) {
+    var evtobj = window.event? event : e
+    if (evtobj.keyCode == 84 && evtobj.shiftKey) toggleTooltip();
+}
+
+document.onkeydown = KeyPress;
+
+function toggleTooltip(){
+    var tooltip = document.getElementById('tooltip');
+    if(tooltip.style.visibility == 'hidden'){
+        tooltip.style.visibility = 'visible';
+    } else {
+        tooltip.style.visibility = 'hidden';
+    }
+
+}
 
 function updateSimulation() {
 	updateGraph()

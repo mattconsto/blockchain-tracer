@@ -19,7 +19,7 @@
 
 		#canvas {overflow: visible !important}
 
-		#tooltip {position: absolute; display: none}
+		#tooltip {position: absolute; display: none; max-width: 400px;}
 		#tooltip > * {padding: 12px}
 		#tooltip-body {overflow:auto; max-height: 300px;}
 
@@ -29,7 +29,7 @@
 </head>
 <body>
 	<div id="ui" class="container row">
-		<div class="card minimal col s5">
+		<div class="card minimal col s4">
 			<div class="card-action row">
 				<form onsubmit="event.preventDefault(); trace(this[0].value)">
 					<div class="input-field col s10">
@@ -42,7 +42,7 @@
 
 		<div class="col s1"></div>
 
-		<div class="card minimal col s5">
+		<div class="card minimal col s6">
 			<div class="card-action row">
 				<div class="input-field col s2">
 					<select onchange="updateFillStyle(parseInt(this.value))">
@@ -124,6 +124,7 @@
 		<ul class="browser-default" style="padding-left: 1.5em">
 			<li>Hover over noes to see their address, click on them to explore the blockchain.</li>
 			<li>Use your mouse to pan and zoom around the graph.</li>
+			<li>Use Shift + T to toggle tooltips.</li>
 			<li>Have fun!</li>
 		</ul>
 		</div>

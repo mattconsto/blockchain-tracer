@@ -24,7 +24,7 @@ svg.attr('width', width).attr('height', height)
 svg.append('defs').append('marker')
 	.attr('id', 'arrowhead')
 	.attr('viewBox', '-0 -5 10 10')
-	.attr('refX', 5)
+	.attr('refX', 20)
 	.attr('refY', 0)
 	.attr('orient', 'auto')
 	.attr('markerWidth', 10)
@@ -159,38 +159,45 @@ function updateGraph() {
 			tooltip.select('#tooltip-title').html(d.label)
 			tooltip.select('#tooltip-value').html((!discoveredAddresses.has(d.id) ? "Estimated: " : "") + balance.toLocaleString() + " BTC (" + (balance * dollarsToBitcoin).toFixed(2).toLocaleString() + " USD)")
 
+			if(taintedAddresses.has(d.id)) {
+				var taintedness = taintedAddresses.get(d.id)
+				tooltip.select('#tooltip-value').html(tooltip.select('#tooltip-value').html() + 
+					(taintedness["poison"] ? "<br />Poisoned" : "") + 
+					(taintedness["haircut"] > 0 ? "<br />Haircut: " + (taintedness["haircut"]*100).toFixed(3) + "%" : "") + 
+					(taintedness["fifo"] > 0 ? "<br />LIFO: " + (taintedness["fifo"] / 100000000.0).toLocaleString() + " BTC" : "")
+				)
+			}
+
 			tooltip.select('#tooltip-allcount').html(linkedAddresses.get(d.id)["out"].size + linkedAddresses.get(d.id)["in"].size)
 			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].size)
 			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].size)
 			
-			var out_tx = "";
-			var in_tx = "";
+			var tx_log = "";
 
-			linkedAddresses.get(d.id)["out"].forEach(function (value, key, map) {
-				for(var i = 0; i < value['out'].length; i++) {
-					var y = value['out'][i]
+			linkedAddresses.get(d.id)["all"].forEach(function (value, key, map) {
+				if(linkedAddresses.get(d.id)["out"].has(value['hash'])) {
+					for(var i = 0; i < value['out'].length; i++) {
+						var y = value['out'][i]
 
-					var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
-					out_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light red\" onclick=\"traceTransactionOut('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
-						"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + ("addr" in y ? y['addr'] : "???") + ")</button><br />";
-				}
-			});
-
-			linkedAddresses.get(d.id)["in"].forEach(function (value, key, map) {
-				for(var i = 0; i < value['out'].length; i++) {
-					var y = value['out'][i]
-
-					var address = y['addr'];
-					if (address === d.label) {
 						var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
-						in_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\" onclick=\"traceTransactionIn('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
-							"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address + ")</button><br />";
+						tx_log += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light red\" onclick=\"traceTransactionOut('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
+							"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + ("addr" in y ? y['addr'] : "???") + ")</button><br />";
+					}
+				} else {
+					for(var i = 0; i < value['out'].length; i++) {
+						var y = value['out'][i]
+
+						var address = y['addr'];
+						if (address === d.label) {
+							var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
+							tx_log += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\" onclick=\"traceTransactionIn('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
+								"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address + ")</button><br />";
+						}
 					}
 				}
 			});
 
-			tooltip.select('#tooltip-in').html(in_tx)
-			tooltip.select('#tooltip-out').html(out_tx)
+			tooltip.select('#tooltip-log').html(tx_log)
 
 			tooltip.style("left", (d3.event.pageX + 15) + "px").style("top", (d3.event.pageY - 28) + "px")
 			tooltipActive = true

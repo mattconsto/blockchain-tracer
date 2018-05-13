@@ -323,7 +323,6 @@ var traceTransactionIn = function(address, hash, index) {
 	// Go!
 	while(queue.size() > 0) {
 		var item = queue.pop()
-		console.log(item)
 
 		var balance = (discoveredAddresses.has(item["data"]["addr"]) ? discoveredAddresses.get(item["data"]["addr"])["final_balance"] : estimatedAddreses.get(item["data"]["addr"]))
 		var total = balance

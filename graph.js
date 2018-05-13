@@ -78,7 +78,8 @@ function resize() {
 }
 
 // Define the div for the tooltip
-var tooltip = d3.select("#tooltip").style("opacity", 0);
+var tooltip = d3.select("#tooltip")
+var tooltipActive = false
 
 svg.call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", zoomed));
 function zoomed() {
@@ -142,7 +143,10 @@ function updateGraph() {
 				default:
 				case 0: return 'hsla(' + node.distance*15 + ', 90%, 50%, 0.85';
 				case 1: return 'rgba(127, 127, 255, 0.85)';
-				case 2: return node.group == 0 ? 'rgba(127, 127, 255, 0.85)' : (node.distance < 0 ? 'rgba(127, 127, 127, 0.85)' : 'rgba(255, 64, 64, 0.85)');
+				case 2: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["poison"] ? 'rgba(255, 0, 0, 0.85)' : 'rgba(127, 127, 127, 0.85)');
+				case 3: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["haircut"] > 0 ? 'rgba(' + Math.floor(taintedAddresses.get(node.id)["haircut"] * 255) + ', 0, 0, 0.85)' : 'rgba(127, 196, 127, 0.85)');
+				case 4: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["fifo"] > 0 ? 'rgba(' + Math.floor(taintedAddresses.get(node.id)["fifo"]/taintValue * 255) + ', 0, 0, 0.85)' : 'rgba(127, 196, 127, 0.85)');
+				case 5: return node.id == taintOrigin ? 'rgba(127, 127, 255, 0.85)' : (taintedAddresses.has(node.id) && taintedAddresses.get(node.id)["filo"] > 0 ? 'rgba(' + Math.floor(taintedAddresses.get(node.id)["filo"]/taintValue * 255) + ', 0, 0, 0.85)' : 'rgba(127, 196, 127, 0.85)');
 			}
 		})
 		.style('cursor', 'pointer')
@@ -151,8 +155,6 @@ function updateGraph() {
 		// to update the graph on every click
 		.on('click', selectNode)
 		.on("mouseover", function(d) {
-			tooltip.transition().duration(200).style("opacity", .9)
-
 			var balance = (discoveredAddresses.has(d.id) ? discoveredAddresses.get(d.id)["final_balance"] : estimatedAddreses.has(d.id) ? estimatedAddreses.get(d.id) : 0) / 100000000.0
 			
 			tooltip.select('#tooltip-title').html(d.label)
@@ -166,21 +168,24 @@ function updateGraph() {
 			var in_tx = "";
 
 			linkedAddresses.get(d.id)["out"].forEach(function (value, key, map) {
-				for (var y of value['out']) {
+				for(var i = 0; i < value['out'].length; i++) {
+					var y = value['out'][i]
+
 					var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
-					out_tx += "<button style='width: 100%;  margin: 2px;' class=\"btn waves-effect waves-light red\">" +
-						"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + y['addr'].trunc(10) + ")</button><br />";
+					out_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light red\" onclick=\"traceTransactionOut('"+d.id+"', '"+value["hash"] + "'," + i + ")\" title=\"Trace\">" +
+						"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + ("addr" in y ? y['addr'] : "???") + ")</button><br />";
 				}
 			});
 
 			linkedAddresses.get(d.id)["in"].forEach(function (value, key, map) {
-				for (var y of value['out']) {
+				for(var i = 0; i < value['out'].length; i++) {
+					var y = value['out'][i]
+
 					var address = y['addr'];
 					if (address === d.label) {
-						var input_addresses = [];
 						var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
-						in_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\">" +
-							"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address.trunc(10) + ")</button><br />";
+						in_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\" onclick=\"traceTransactionIn('"+d.id+"', '"+value["hash"] + "'," + i + ")\" disabled title=\"Trace\">" +
+							"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address + ")</button><br />";
 					}
 				}
 			});
@@ -188,16 +193,28 @@ function updateGraph() {
 			tooltip.select('#tooltip-in').html(in_tx)
 			tooltip.select('#tooltip-out').html(out_tx)
 
-			tooltip.style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px")
+			tooltip.style("left", (d3.event.pageX + 15) + "px").style("top", (d3.event.pageY - 28) + "px")
+			tooltipActive = true
 			d3.selectAll(".connects_" + d.id).attr('opacity', '1')
+			tooltip.style("display", "block")
 		})
 		.on("mouseout", function(d) {
-			tooltip.transition().duration(500).style("opacity", 0)
+			tooltipActive = false
+			setTimeout(function() {
+				if(!tooltipActive) tooltip.style("display", "none")
+			}, 500)
 			d3.selectAll(".connects_" + d.id).attr('opacity', '0.25')
 		})
 
 	nodeElements = nodeEnter.merge(nodeElements)
 }
+
+document.getElementById('tooltip').addEventListener("mouseenter", function() {
+	tooltipActive = true
+})
+document.getElementById('tooltip').addEventListener("mouseleave", function() {
+	tooltipActive = false
+})
 
 function updateSimulation() {
 	updateGraph()

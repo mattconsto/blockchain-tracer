@@ -80,6 +80,9 @@ var estimatedAddreses = new Map()
 var discoveredAddresses = new Map()
 var discoveredLinks = new Set()
 var linkedAddresses = new Map()
+var taintedAddresses = new Map()
+var taintOrigin = ""
+var taintValue = ""
 
 var dateMin = new Date("2000").getTime()/1000
 var dateMax = new Date("3000").getTime()/1000
@@ -118,10 +121,12 @@ var updateBlockchain = function(address, result, offset, distance) {
 						links.push({source: source, target: target, strength: 0.7})
 					}
 
-					if(!linkedAddresses.has(source)) linkedAddresses.set(source, {"in": new Map(), "out": new Map()})
-					if(!linkedAddresses.has(target)) linkedAddresses.set(target, {"in": new Map(), "out": new Map()})
+					if(!linkedAddresses.has(source)) linkedAddresses.set(source, {"in": new Map(), "out": new Map(), "all" : new Map()})
+					if(!linkedAddresses.has(target)) linkedAddresses.set(target, {"in": new Map(), "out": new Map(), "all" : new Map()})
 					linkedAddresses.get(source)["out"].set(transaction['hash'], transaction)
 					linkedAddresses.get(target)["in"].set(transaction['hash'], transaction)
+					linkedAddresses.get(source)["all"].set(transaction['hash'], transaction)
+					linkedAddresses.get(target)["all"].set(transaction['hash'], transaction)
 				}
 			}
 
@@ -156,7 +161,7 @@ var updateBlockchain = function(address, result, offset, distance) {
 
 	if(result["txs"].length == 100) {
 		// Recurse
-		if(offset == 0 || offset % 200 != 0 || (offset % 200 == 0 && confirm("Do you wish to continue loading addresses? This may cause significant slowdown!"))) {
+		if(offset == 0 || offset % 100 != 0 || (offset % 100 == 0 && confirm("Do you wish to continue loading addresses? This may cause significant slowdown!"))) {
 			lookup(address, offset+100, function(result) {updateBlockchain(address, result, offset+100, distance)}, function(status) {
 				console.error("Error", status)
 				M.toast({html: "Error:" + status, displayLength: Infinity})
@@ -183,4 +188,71 @@ var trace = function(hash) {
 		M.toast({html: "Error:" + status, displayLength: Infinity})
 	})
 	return false
+}
+
+var traceTransactionOut = function(address, hash, index) {
+	// Fill the queue
+	var item = linkedAddresses.get(address)["all"].get(hash)
+	var queue = [{"data": item["out"][index], "time": item["time"], "haircut": 1.0, "fifo": item["out"][index]["value"], "filo": item["out"][index]["value"]}]
+
+	// Reset variables
+	taintedAddresses = new Map()
+	taintOrigin = address
+	taintValue = item["out"][index]["value"]
+
+	// Go!
+	while(queue.length > 0) {
+		var item = queue.pop(0)
+
+		var balance = (discoveredAddresses.has(item["data"]["addr"]) ? discoveredAddresses.get(item["data"]["addr"])["final_balance"] : estimatedAddreses.get(item["data"]["addr"]))
+		var total = balance
+		var fifobalance = item["fifo"]
+		var filobalance = item["filo"] - Math.min(item["filo"], balance)
+
+		console.log("start addr", item["data"]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
+
+		if(linkedAddresses.has(item["data"]["addr"])) {
+			var transactions = Array.from(linkedAddresses.get(item["data"]["addr"])["out"].values())
+			transactions.sort(function(a, b) {return a["time"] - b["time"]})
+
+			for(var transaction of transactions) {
+				if(transaction["time"] >= item["time"]) {
+					for(var out of transaction["out"]) total += out["value"]
+
+					for(var i = 0; i < transaction["out"].length; i++) {
+						var fifoout = Math.min(fifobalance, transaction["out"][i]["value"])
+						fifobalance -= fifoout
+						console.log("> addr", transaction["out"][i]["addr"], "fifobalance", fifobalance, "fifout", fifoout)
+						var filoout = Math.min(filobalance, transaction["out"][transaction["out"].length-i-1]["value"])
+						filobalance -= filoout
+
+						queue.push({
+							"data": transaction["out"][i],
+							"time": transaction["time"],
+							"haircut": item["haircut"] * transaction["out"][i]["value"] / total,
+							"fifo": fifoout,
+							"filo": filoout,
+						})
+					}
+				}
+			}
+		}
+
+		if(!taintedAddresses.has(item["data"]["addr"])) {
+			taintedAddresses.set(item["data"]["addr"], {"poison": true, "haircut": item["haircut"] * balance / total, "fifo": fifobalance, "filo": Math.min(item["filo"], balance)})
+		} else {
+			//idk
+		}
+	}
+
+	// Update colouring, and switch to poison if on distance
+	if(fillStyle < 2) fillStyle = 2
+	updateFillStyle(fillStyle)
+}
+
+var traceTransactionIn = function(address, hash, index) {
+	taintedAddresses = new Map()
+	taintOrigin = address
+
+	console.log(address, hash, index)
 }

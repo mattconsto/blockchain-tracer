@@ -25,6 +25,13 @@
 			pointer-events: none;
 		}
 
+
+		#tooltip-body {
+			pointer-events: auto;
+			overflow:auto;
+			max-height: 300px;
+		}
+
 		.dropdown-content {width: fit-content !important; height: auto !important; margin-top: 3em}
 		#toast-container {top: auto; bottom: 2%; left: 0; right: 0; margin: auto; max-width: fit-content}
 	</style>
@@ -103,7 +110,7 @@
 				<li class="tab"><a href="#tooltip-out"><span id="tooltip-outcount"></span> Outgoing</a></li>
 			</ul>
 		</div>
-		<div class="card-content grey lighten-4">
+		<div class="card-content grey lighten-4" id="tooltip-body">
 			<!-- <div id="tooltip-all"></div> -->
 			<div id="tooltip-in"></div>
 			<div id="tooltip-out"></div>

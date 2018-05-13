@@ -4,6 +4,20 @@ var links = []
 var width = window.innerWidth
 var height = window.innerHeight
 
+
+String.prototype.trunc = String.prototype.trunc || function (n) {return (this.length > n) ? this.substr(0, n) + '...' : this}
+
+Number.prototype.formatMoney = function (c, d, t) {
+	var n = this,
+		c = isNaN(c = Math.abs(c)) ? 2 : c,
+		d = d == undefined ? "." : d,
+		t = t == undefined ? "," : t,
+		s = n < 0 ? "-" : "",
+		i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
+		j = (j = i.length) > 3 ? j % 3 : 0;
+	return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+}
+
 var svg = d3.select('svg')
 svg.attr('width', width).attr('height', height)
 
@@ -148,28 +162,29 @@ function updateGraph() {
 			tooltip.select('#tooltip-outcount').html(linkedAddresses.get(d.id)["out"].size)
 			tooltip.select('#tooltip-incount').html(linkedAddresses.get(d.id)["in"].size)
 			
-			var out_tx = []
-			linkedAddresses.get(d.id)["out"].forEach(function(value, key, map ){
-				for (var y of value['out'] ){
-					out_tx.push(y['value'] + ' ' +  y['addr'])
+			var out_tx = "";
+			var in_tx = "";
+
+			linkedAddresses.get(d.id)["out"].forEach(function (value, key, map) {
+				for (var y of value['out']) {
+					var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
+					out_tx += "<button style='width: 100%;  margin: 2px;' class=\"btn waves-effect waves-light red\">" +
+						"<i class=\"material-icons left\">keyboard_arrow_left</i> " + txt + " (" + y['addr'].trunc(10) + ")</button><br />";
 				}
-			})
-			
-			var in_tx = []
-			linkedAddresses.get(d.id)["in"].forEach(function(value, key, map) {
-				for (var y of value['out'] ){
-					var address = y['addr']
-					if (address === d.label){
-						var input_addresses = []
-						for (var input of value['inputs']){
-							input_addresses.push(input['prev_out']['addr'])
-						}
-						in_tx.push(y['value'] + ' ' + input_addresses)
+			});
+
+			linkedAddresses.get(d.id)["in"].forEach(function (value, key, map) {
+				for (var y of value['out']) {
+					var address = y['addr'];
+					if (address === d.label) {
+						var input_addresses = [];
+						var txt = '<b>' + (y['value'] / 100000000.0) + '</b> ';
+						in_tx += "<button style='width: 100%; margin: 2px;' class=\"btn waves-effect waves-light\">" +
+							"<i class=\"material-icons left\">keyboard_arrow_right</i> " + txt.trunc(50) + " (" + address.trunc(10) + ")</button><br />";
 					}
 				}
-				
-			})
-			
+			});
+
 			tooltip.select('#tooltip-in').html(in_tx)
 			tooltip.select('#tooltip-out').html(out_tx)
 

@@ -275,7 +275,7 @@ var traceTransactionOut = function(address, hash, index) {
 				if(seen.has(transaction["hash"])) continue
 				seen.add(transaction["hash"])
 			
-				if(transaction["time"] >= item["time"]) continue
+				if(transaction["time"] > item["time"]) continue
 
 				for(var out of transaction["out"]) total += out["value"]
 
@@ -336,7 +336,7 @@ var traceTransactionIn = function(address, hash, index) {
 				if(seen.has(transaction["hash"])) continue
 				seen.add(transaction["hash"])
 			
-				if(transaction["time"] >= item["time"]) continue
+				if(transaction["time"] < item["time"]) continue
 
 				for(var inpu of transaction["inputs"]) total += inpu["prev_out"]["value"]
 

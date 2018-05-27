@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	M.FormSelect.init(document.querySelectorAll('select'))
 	M.Modal.init(document.querySelectorAll('.modal'))
 	M.Datepicker.init(document.querySelectorAll('.datepicker'))
+	M.toast({html: 'Powered by Blockchain.info', displayLength: 2000})
 
 	// Automatically navigate on load.
 	var addresshash = document.getElementById('hash')

@@ -4,7 +4,6 @@ var links = []
 var width = window.innerWidth
 var height = window.innerHeight
 
-
 String.prototype.trunc = String.prototype.trunc || function (n) {return (this.length > n) ? this.substr(0, n) + '...' : this}
 
 Number.prototype.formatMoney = function (c, d, t) {
@@ -80,7 +79,7 @@ function resize() {
 var tooltip = d3.select("#tooltip")
 var tooltipActive = false
 
-svg.call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", zoomed));
+svg.call(d3.zoom().scaleExtent([1 / 8, 8]).on("zoom", zoomed));
 function zoomed() {
 	nodeGroup.attr("transform", d3.event.transform);
 	linkGroup.attr("transform", d3.event.transform);

@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Graph!</title>
+	<meta charset="utf-8" />
+	<title>Blockchain Tracer</title>
 	<link rel="stylesheet" href="scripts/libs/materialize.min.css">
 	<link rel="stylesheet" href="scripts/libs/icons.css">
 	<style>
-		body {overflow: hidden; background: #040404}
+		body {overflow: hidden; background: #040404; font-size: .75em}
+
+		input {font-size: 1.25em !important}
 
 		#ui {position: absolute; top: 2em; left: 0; right: 0; z-index: 1000; opacity: 0.9}
+
+		@media (max-width: 800px) {
+			#ui {min-width: 90%}
+		}
+		@media (max-width: 1200px) {
+			#ui {min-width: 80%}
+		}
 
 		.card.minimal {padding: 0}
 		.card.minimal > * {background: none; padding: 0; margin: 0}
@@ -17,11 +27,18 @@
 		.card.minimal > * .btn {height: 100%; transform: scale(1.5)}
 		.card.minimal > * .range-field > label, .card.minimal > * .switch > label {position: absolute; top: -2em}
 
+		.row .col {padding: 0 .25rem}
+
 		#canvas {overflow: visible !important}
 
 		#tooltip {position: absolute; display: none; max-width: 400px;}
 		#tooltip > * {padding: 12px}
 		#tooltip-body {overflow:auto; max-height: 300px;}
+
+		.switch label .lever {margin: 0}
+
+		#dropdown * {font-size: 1.1em !important}
+		#dropdown i {margin: 0 !important}
 
 		.dropdown-content {width: fit-content !important; height: auto !important; margin-top: 3em}
 		#toast-container {top: auto; bottom: 2%; left: 0; right: 0; margin: auto; max-width: fit-content}
@@ -35,7 +52,7 @@
 					<div class="input-field col s10">
 						<input placeholder="Address/Transaction Hash" id="hash" type="text" value="1AJbsFZ64EpEfS5UAjAfcUG8pH8Jn3rn1F">
 					</div>
-					<button class="btn waves-effect waves-light col s2" type="submit" name="action"><i class="material-icons">arrow_forward</i></button>
+					<button class="btn waves-effect waves-light col s2" type="submit" name="action" style="transform: scale(1.2) translate(1px, 2px)"><i class="material-icons">arrow_forward</i></button>
 				</form>
 			</div>
 		</div>
@@ -52,7 +69,7 @@
 						<option value="3">Haircut</option>
 						<option value="4">FIFO</option>
 					</select>
-					<label style="position: absolute; top: -3em; font-size: 0.8em">Colouring</label>
+					<label style="position: absolute; top: -3em">Colour</label>
 				</div>
 
 				<div class="input-field col s3">
@@ -75,7 +92,7 @@
 
 				<div class="switch col s2">
 					<label>
-						Simulation<br/><br/>
+						Run<br/><br/>
 						<input type="checkbox" checked onchange="this.checked ? simulation.velocityDecay(0.97) : simulation.velocityDecay(1)" />
 						<span class="lever"></span>
 					</label>

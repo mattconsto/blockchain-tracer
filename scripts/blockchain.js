@@ -142,6 +142,8 @@ var taintValue = ""
 var dateMin = new Date("2000").getTime()/1000
 var dateMax = new Date("3000").getTime()/1000
 
+var linksMax = 200;
+
 var updateBlockchain = function(address, result, offset, distance) {
 	console.log(address, offset)
 	window.location.hash = "!" + address
@@ -210,6 +212,9 @@ var updateBlockchain = function(address, result, offset, distance) {
 				}
 			}
 		}
+
+		// For somewhat better performance
+		while(links.length > linksMax) links.shift();
 
 		updateSimulation()
 	}

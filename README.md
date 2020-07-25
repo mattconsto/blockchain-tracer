@@ -1,6 +1,6 @@
 # Bitcoin Trace
 
-[![](/report/images/application.png)](https://consto.uk/blockchain-trace)
+[![](/report/images/application.png)](https://consto.uk/blockchain-tracer)
 
 This project demonstrates the ability to visualize, and trace transactions through the Bitcoin network, evaluating three different methods. Namely poison, haircut and First-In-First-Out (FIFO).
 

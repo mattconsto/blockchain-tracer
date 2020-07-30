@@ -162,6 +162,12 @@
 		</div>
 	</div>
 </body>
+	<script>
+		if (/MSIE (\d+\.\d+);/.test(navigator.userAgent) || navigator.userAgent.indexOf("Trident/") > -1) {
+			document.getElementsByTagName("body")[0].style.display = "none";
+			alert("Please upgrade to a modern browser to use Blockchain Tracer");
+		}
+	</script>
 	<script src="scripts/libs/d3.v4.min.js"></script>
 	<script src="scripts/libs/materialize.min.js"></script>
 	<script src="scripts/graph.js"></script>
